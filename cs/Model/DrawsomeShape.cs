@@ -66,7 +66,7 @@ namespace NoteTaker.Model
 
             if (nextFalseCandidate != null)
             {
-                var nextOfFalseNext = otherShapes.ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
+                var nextOfFalseNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
                 if (nextOfFalseNext != null)
                 {
                     this.NextFalse = new DrawsomeLine();
