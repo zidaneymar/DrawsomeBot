@@ -65,27 +65,41 @@ namespace Contoso.NoteTaker.JSON.Format
         // todo: fix the acurracy
         public bool IsLowerLinked(InkRecognitionUnit other)
         {
-            if (Math.Abs(this.BoundingRect.TopY + this.BoundingRect.Height - other.BoundingRect.TopY) < Tolerance)
+            //if (Math.Abs(this.BoundingRect.TopY + this.BoundingRect.Height - other.BoundingRect.TopY) < Tolerance)
+            //{
+            //    if (Math.Abs(this.BoundingRect.TopX + this.BoundingRect.Width / 2 - (other.BoundingRect.TopX + other.BoundingRect.Width / 2)) < Tolerance)
+            //    {
+            //        return true;
+            //    }
+            //}
+            //return false;
+            if (other.BoundingRect.TopX == this.BoundingRect.TopX && other.BoundingRect.TopY == this.BoundingRect.TopY)
             {
-                if (Math.Abs(this.BoundingRect.TopX + this.BoundingRect.Width / 2 - (other.BoundingRect.TopX + other.BoundingRect.Width / 2)) < Tolerance)
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+
+            var dis = DistanceToLower(other);
+            return dis < Tolerance;
         }
 
         public bool IsRightMidAligned(InkRecognitionUnit other)
         {
-            if (Math.Abs(this.BoundingRect.TopX + this.BoundingRect.Width - other.BoundingRect.TopX) < Tolerance)
+            //if (Math.Abs(this.BoundingRect.TopX + this.BoundingRect.Width - other.BoundingRect.TopX) < Tolerance)
+            //{
+            //    if (Math.Abs(this.BoundingRect.TopY + this.BoundingRect.Height / 2 - other.BoundingRect.TopY) < Tolerance)
+            //    {
+            //        return true;
+            //    }
+            //}
+
+            //return false;
+            if (other.BoundingRect.TopX == this.BoundingRect.TopX && other.BoundingRect.TopY == this.BoundingRect.TopY)
             {
-                if (Math.Abs(this.BoundingRect.TopY + this.BoundingRect.Height / 2 - other.BoundingRect.TopY) < Tolerance)
-                {
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            var dis = DistanceToRight(other);
+            return dis < Tolerance;
         }
 
         public bool IsRightLowerLinked(InkRecognitionUnit other)
@@ -108,7 +122,7 @@ namespace Contoso.NoteTaker.JSON.Format
             var x2 = other.BoundingRect.TopX + other.BoundingRect.Width / 2;
             var y2 = other.BoundingRect.TopY;
 
-            return Math.Abs((x1 - x2) * (y1 - y2));
+            return (float)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
         }
 
         public float DistanceToRight(InkRecognitionUnit other)
@@ -118,7 +132,7 @@ namespace Contoso.NoteTaker.JSON.Format
             var x2 = other.BoundingRect.TopX;
             var y2 = other.BoundingRect.TopY;
 
-            return Math.Abs((x1 - x2) * (y1 - y2));
+            return (float)Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
         }
 
     }

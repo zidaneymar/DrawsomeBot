@@ -53,7 +53,7 @@ namespace NoteTaker.Model
             if (nextCandidate != null)
             {
                 // Recursivly get the next shape
-                var nextOfNext = otherShapes.ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
+                var nextOfNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
 
                 if (nextOfNext != null)
                 {
