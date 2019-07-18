@@ -3,8 +3,11 @@ using Microsoft.Azure.CognitiveServices.Language.LUIS.Runtime.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace NoteTaker.HTTP
 {
@@ -13,23 +16,22 @@ namespace NoteTaker.HTTP
         public LuisRecognizer(string key, string appId)
         {
             this.appId = appId;
-            this.creds = new ApiKeyServiceClientCredentials(key);
-            this.luClient = new LUISRuntimeClient(creds, new System.Net.Http.DelegatingHandler[] { });
-            this.luClient.Endpoint = endPoint;
+            this.key = key;
         }
-
-        private readonly ApiKeyServiceClientCredentials creds;
-
-        private LUISRuntimeClient luClient;
 
         private readonly string appId;
 
-        private readonly string endPoint = "https://westus.api.cognitive.microsoft.com";
+        private readonly string key;
 
         public async Task<LuisResult> GetPrediction(string query)
         {
-            var prediction = new Prediction(luClient);
-            return await prediction.ResolveAsync(appId, query);
+            var client = new HttpClient();
+            var endpointUri = string.Format("https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/{0}?verbose=true&timezoneOffset=-360&subscription-key={1}&q={2}", appId, key, query);
+            var response = await client.GetAsync(endpointUri);
+
+            var strResponseContent = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<LuisResult>(strResponseContent);
         }
 
     }

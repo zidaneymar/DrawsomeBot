@@ -18,5 +18,14 @@ namespace NoteTaker.Model
             this.Root = new DrawsomeShape(root.GetShapes().ToList().OrderBy(item => item.BoundingRect.TopY).First(), root.GetLines().ToList(), root.GetUnits().ToList(), root.GetShapes().ToList());
         }
 
+        public DrawsomePic(DrawsomeShape root)
+        {
+            this.Root = root;
+        }
+
+        public override string ToString()
+        {
+            return this.Root.ToString();
+        }
     }
 }

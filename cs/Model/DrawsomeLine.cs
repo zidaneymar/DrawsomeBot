@@ -14,5 +14,10 @@ namespace NoteTaker.Model
         {
 
         }
+
+        public override string ToString()
+        {
+            return "->" + Next.ToString();
+        }
     }
 }

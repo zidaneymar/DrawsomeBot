@@ -8,6 +8,11 @@ using Contoso.NoteTaker.Services.Ink;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 using NoteTaker.Model;
+using NoteTaker.Helpers;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Windows.Storage.Pickers;
+using Windows.Storage;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -88,15 +93,27 @@ namespace NoteTaker
                     if (root != null)
                     {
                         var pic = new DrawsomePic(root);
-                        output.Text = OutputWriter.Print(root);
+                        //output.Text = pic.ToString();
+                        var composerBot = await BotGenerator.Parse(pic);
+                        var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
 
+                        FileSavePicker picker = new FileSavePicker();
+                        picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                        picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                        picker.SuggestedFileName = "Main.dialog";
+                        StorageFile file = await picker.PickSaveFileAsync();
+
+                        if (file != null)
+                        {
+                            await FileIO.WriteTextAsync(file, composerJson);
+                        }
 
                     }
                 }
             }
             catch (Exception ex)
             {
-                output.Text = OutputWriter.PrintError(ex.Message);
+                //output.Text = OutputWriter.PrintError(ex.Message);
             }
         }
 

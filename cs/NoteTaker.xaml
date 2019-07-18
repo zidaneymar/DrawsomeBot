@@ -9,23 +9,17 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="4*" />
-            <RowDefinition Height="1*" />
-        </Grid.RowDefinitions>
-        <Border Grid.Row ="0" BorderBrush="Black" BorderThickness="1">
-            <InkCanvas x:Name="inkCanvas" HorizontalAlignment="Stretch" />
-        </Border>
+        <ScrollViewer ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="20" HorizontalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+              VerticalScrollBarVisibility="Visible" BorderBrush="LightBlue" BorderThickness="2">
+            <Border Grid.Row ="0" BorderBrush="Black" BorderThickness="1">
+                <InkCanvas x:Name="inkCanvas" HorizontalAlignment="Stretch" />
+            </Border>
+        </ScrollViewer>
         <Border>
             <InkToolbar x:Name="inkToolbar" VerticalAlignment="Bottom" TargetInkCanvas="{x:Bind inkCanvas}"></InkToolbar>
         </Border>
         <Border>
-            <Button Content="Get Storkes" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}"/>
-        </Border>
-        <Border Grid.Row ="1" BorderBrush="Black" BorderThickness="1">
-            <ScrollViewer>
-                <TextBlock x:Name="output" HorizontalAlignment="Center" TextAlignment="Center" FontSize="30" TextWrapping="Wrap"/>
-            </ScrollViewer>
+            <Button Content="Get Storkes And Save" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="32"/>
         </Border>
     </Grid>
 </Page>

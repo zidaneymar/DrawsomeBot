@@ -1,4 +1,5 @@
 ﻿using Contoso.NoteTaker.JSON.Format;
+using NoteTaker.HTTP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,12 +45,15 @@ namespace NoteTaker.Model
             }
 
             // ToDo: get the luis result for the text
-            this.Text = lines.FindAll(item => unit.Contains((InkRecognitionUnit)item)).First().RecognizedText;
-            var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => item.BoundingRect.Width).FirstOrDefault();
+            this.Text = lines.FindAll(item => unit.Contains((InkRecognitionUnit)item)).FirstOrDefault()?.RecognizedText;
+
+            // Get the next line
+            var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => unit.DistanceToLower(item)).FirstOrDefault();
 
             if (nextCandidate != null)
             {
-                var nextOfNext = otherShapes.ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => item.BoundingRect.Width).FirstOrDefault();
+                // Recursivly get the next shape
+                var nextOfNext = otherShapes.ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
 
                 if (nextOfNext != null)
                 {
@@ -57,6 +61,25 @@ namespace NoteTaker.Model
                     this.Next.Next = new DrawsomeShape(nextOfNext, lines, otherUnits, otherShapes);
                 }
             }
+
+            var nextFalseCandidate = otherUnits.ToList().FindAll(item => unit.IsRightMidAligned(item)).OrderBy(item => unit.DistanceToRight(item)).FirstOrDefault();
+
+            if (nextFalseCandidate != null)
+            {
+                var nextOfFalseNext = otherShapes.ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
+                if (nextOfFalseNext != null)
+                {
+                    this.NextFalse = new DrawsomeLine();
+                    this.NextFalse.Next = new DrawsomeShape(nextOfFalseNext, lines, otherUnits, otherShapes);
+                }
+            }
+
         }
+
+        public override string ToString()
+        {
+            return string.Format("[Shape:{0}, Text:{1}]", Type, Text) + this.Next?.ToString();
+        }
+
     }
 }

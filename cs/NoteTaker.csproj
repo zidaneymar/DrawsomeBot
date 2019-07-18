@@ -116,6 +116,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Helpers\BotGenerator.cs" />
     <Compile Include="HTTP\LuisRecognizer.cs" />
     <Compile Include="JSON\Converter\InkRecognitionResponseConverter.cs" />
     <Compile Include="JSON\Converter\InkPointsToStringConverter.cs" />
@@ -126,9 +127,11 @@
     <Compile Include="JSON\Format\HttpErrorDetails.cs" />
     <Compile Include="JSON\Format\PointDetailsPattern.cs" />
     <Compile Include="JSON\Format\Rectangle.cs" />
+    <Compile Include="Model\ComposerBot.cs" />
     <Compile Include="Model\DrawsomePic.cs" />
     <Compile Include="Model\DrawsomeLine.cs" />
     <Compile Include="Model\DrawsomeShape.cs" />
+    <Compile Include="Model\ComposerStep.cs" />
     <Compile Include="Services\Ink\InkRecognizer.cs" />
     <Compile Include="HTTP\HttpManager.cs" />
     <Compile Include="JSON\Format\InkRecognitionRequest.cs" />
@@ -185,9 +188,7 @@
       <Version>12.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
