@@ -13,6 +13,10 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.Storage;
+using Windows.Foundation;
+using System.Collections.Generic;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI.Xaml.Media;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -27,7 +31,8 @@ namespace NoteTaker
         DisplayInformation displayInfo;
 
         private readonly DispatcherTimer dispatcherTimer;
-
+        private readonly float DpiX;
+        private readonly float DpiY;
         // Time to wait before triggering ink recognition operation
         const double IDLE_WAITING_TIME = 1000;
 
@@ -55,6 +60,8 @@ namespace NoteTaker
             displayInfo = DisplayInformation.GetForCurrentView();
             inkRecognizer.SetDisplayInformation(displayInfo);
 
+            DpiX = displayInfo.RawDpiX;
+            DpiY = displayInfo.RawDpiY;
             //dispatcherTimer = new DispatcherTimer();
             //dispatcherTimer.Tick += DispatcherTimer_Tick;
             //dispatcherTimer.Interval = TimeSpan.FromMilliseconds(IDLE_WAITING_TIME);
@@ -82,6 +89,70 @@ namespace NoteTaker
             //StartTimer();
         }
 
+        private void DrawingDebugInfoForShape(DrawsomeShape shape)
+        {
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+            points.Add(new Point(shape.BoundingRect.TopX * scalingX, shape.BoundingRect.TopY * scalingY));
+            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, shape.BoundingRect.TopY * scalingY));
+            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+            points.Add(new Point(shape.BoundingRect.TopX * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+
+            Polygon polygon = new Polygon();
+
+            foreach (Point point in points)
+            {
+                polygon.Points.Add(point);
+            }
+
+            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 255));
+            polygon.Stroke = brush;
+            polygon.StrokeThickness = 2;
+            debugCanvas.Children.Add(polygon);
+
+            if (shape.Next != null)
+            {
+                DrawingDebugInfoForLine(shape.Next);
+            }
+
+            if (shape.NextFalse != null)
+            {
+                DrawingDebugInfoForLine(shape.NextFalse);
+            }
+
+        }
+
+        private void DrawingDebugInfoForLine(DrawsomeLine shape)
+        {
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+            points.Add(new Point(shape.BoundingRect.TopX * scalingX, shape.BoundingRect.TopY * scalingY));
+            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, shape.BoundingRect.TopY * scalingY));
+            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+            points.Add(new Point(shape.BoundingRect.TopX * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+
+            Polygon polygon = new Polygon();
+
+            foreach (Point point in points)
+            {
+                polygon.Points.Add(point);
+            }
+
+            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 0, 0));
+            polygon.Stroke = brush;
+            polygon.StrokeThickness = 2;
+            debugCanvas.Children.Add(polygon);
+            
+            if (shape.Next != null)
+            {
+                DrawingDebugInfoForShape(shape.Next);
+            }
+        }
+
         private async void SubscribeButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -93,21 +164,25 @@ namespace NoteTaker
                     if (root != null)
                     {
                         var pic = new DrawsomePic(root);
-                        //output.Text = pic.ToString();
-                        var composerBot = await BotGenerator.Parse(pic);
-                        var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
 
-                        FileSavePicker picker = new FileSavePicker();
-                        picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                        picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                        picker.SuggestedFileName = "Main.dialog";
-                        StorageFile file = await picker.PickSaveFileAsync();
-
-                        if (file != null)
+                        if (pic.Root != null)
                         {
-                            await FileIO.WriteTextAsync(file, composerJson);
-                        }
+                            DrawingDebugInfoForShape(pic.Root);
+                            //output.Text = pic.ToString();
+                            var composerBot = await BotGenerator.Parse(pic);
+                            var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
 
+                            FileSavePicker picker = new FileSavePicker();
+                            picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                            picker.SuggestedFileName = "Main.dialog";
+                            StorageFile file = await picker.PickSaveFileAsync();
+
+                            if (file != null)
+                            {
+                                await FileIO.WriteTextAsync(file, composerJson);
+                            }
+                        }
                     }
                 }
             }

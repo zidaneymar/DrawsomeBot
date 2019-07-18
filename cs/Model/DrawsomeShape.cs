@@ -16,7 +16,7 @@ namespace NoteTaker.Model
         Undetermined
     }
 
-    public class DrawsomeShape
+    public class DrawsomeShape: DrawsomeObj
     {
         public ShapeType Type { get; set; }
 
@@ -30,6 +30,7 @@ namespace NoteTaker.Model
         // other units contains all the units detected
         public DrawsomeShape(InkRecognitionUnit unit, List<InkLine> lines = null, List<InkRecognitionUnit> otherUnits = null, List<InkDrawing> otherShapes = null)
         {
+            this.BoundingRect = unit.BoundingRect;
             var drawing = unit as InkDrawing;
             switch (drawing.RecognizedShape)
             {
@@ -56,7 +57,7 @@ namespace NoteTaker.Model
                 if (nextOfFalseNext != null)
                 {
                     //elseDepth = GetElseBranchDepth(nextOfFalseNext, otherUnits, otherShapes);
-                    this.NextFalse = new DrawsomeLine();
+                    this.NextFalse = new DrawsomeLine(nextFalseCandidate);
                     this.NextFalse.Next = new DrawsomeShape(nextOfFalseNext, lines, otherUnits, otherShapes);
                 }
             }
@@ -71,7 +72,7 @@ namespace NoteTaker.Model
                 var nextOfNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
                 if (nextOfNext != null)
                 {
-                    this.Next = new DrawsomeLine();
+                    this.Next = new DrawsomeLine(nextCandidate);
                     this.Next.Next = new DrawsomeShape(nextOfNext, lines, otherUnits, otherShapes);
                 }
             }

@@ -71,7 +71,18 @@ namespace NoteTaker.Helpers
 
             var content = GetContent(luisResponse);
 
-            var shapeType = luisResponse.TopScoringIntent?.Intent;
+            string shapeType = string.Empty;
+            switch (shape.Type)
+            {
+                case ShapeType.Diamond:
+                    shapeType = nameof(IfCondition);
+                    break;
+            }
+
+            if (string.IsNullOrEmpty(shapeType))
+            {
+                shapeType = luisResponse.TopScoringIntent?.Intent;
+            }
 
             if (shape.NextFalse != null)
             {
