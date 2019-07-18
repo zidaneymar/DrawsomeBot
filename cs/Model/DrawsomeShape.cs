@@ -44,8 +44,23 @@ namespace NoteTaker.Model
                     break;
             }
 
-            // ToDo: get the luis result for the text
             this.Text = lines.FindAll(item => unit.Contains((InkRecognitionUnit)item)).FirstOrDefault()?.RecognizedText;
+
+            // we need to get the enclosed line for the else condition
+            //var elseDepth = 0.0;
+
+            var nextFalseCandidate = otherUnits.ToList().FindAll(item => unit.IsRightMidAligned(item)).OrderBy(item => unit.DistanceToRight(item)).FirstOrDefault();
+            if (nextFalseCandidate != null)
+            {
+                var nextOfFalseNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
+                if (nextOfFalseNext != null)
+                {
+                    //elseDepth = GetElseBranchDepth(nextOfFalseNext, otherUnits, otherShapes);
+                    this.NextFalse = new DrawsomeLine();
+                    this.NextFalse.Next = new DrawsomeShape(nextOfFalseNext, lines, otherUnits, otherShapes);
+                }
+            }
+
 
             // Get the next line
             var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => unit.DistanceToLower(item)).FirstOrDefault();
@@ -54,7 +69,6 @@ namespace NoteTaker.Model
             {
                 // Recursivly get the next shape
                 var nextOfNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
-
                 if (nextOfNext != null)
                 {
                     this.Next = new DrawsomeLine();
@@ -62,19 +76,32 @@ namespace NoteTaker.Model
                 }
             }
 
-            var nextFalseCandidate = otherUnits.ToList().FindAll(item => unit.IsRightMidAligned(item)).OrderBy(item => unit.DistanceToRight(item)).FirstOrDefault();
-
-            if (nextFalseCandidate != null)
-            {
-                var nextOfFalseNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
-                if (nextOfFalseNext != null)
-                {
-                    this.NextFalse = new DrawsomeLine();
-                    this.NextFalse.Next = new DrawsomeShape(nextOfFalseNext, lines, otherUnits, otherShapes);
-                }
-            }
 
         }
+
+        public float GetElseBranchDepth(InkRecognitionUnit unit, List<InkRecognitionUnit> otherUnits = null, List<InkDrawing> otherShapes = null)
+        {
+            var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => unit.DistanceToLower(item)).FirstOrDefault();
+
+            if (nextCandidate != null)
+            {
+                // Recursivly get the next shape
+                var nextOfNext = otherShapes.ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
+
+                if (nextOfNext != null)
+                {
+                    return GetElseBranchDepth(nextOfNext, otherUnits, otherShapes);
+                }
+
+                // return the last arrow depth
+                return nextCandidate.BoundingRect.TopY + nextCandidate.BoundingRect.Height;
+            }
+
+
+            // the last one doensn't have enclosed arrow so we don't have constraints on the if true condition
+            return 0;
+        }
+
 
         public override string ToString()
         {
