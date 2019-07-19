@@ -7,18 +7,42 @@ using System.Threading.Tasks;
 
 namespace NoteTaker.Model
 {
-    public class DrawsomeObj
-    {
-        public Rectangle BoundingRect { get; set; }
-
-    }
     public class DrawsomeLine: DrawsomeObj
     {
-        public DrawsomeShape Next { get; set; }
+        public List<Rectangle> LittleRects { get; set; } = new List<Rectangle>();
 
-        public DrawsomeLine(InkRecognitionUnit unit)
+        private Rectangle GetRectangle(Windows.UI.Input.Inking.InkPoint p, float size = 4.0f)
         {
-            this.BoundingRect = unit.BoundingRect;
+            var res = new Contoso.NoteTaker.JSON.Format.Rectangle();
+            res.TopX = (float)(p.Position.X - size / 2);
+            res.TopY = (float)(p.Position.Y - size / 2);
+            res.Width = size;
+            res.Height = size;
+            return res;
+        }
+
+        public DrawsomeLine(InkRecognitionUnit unit, List<InkRecognizerStroke> inkStrokes, int skip = 10): base(unit)
+        {
+            var lineStores = new List<InkRecognizerStroke>();
+
+            foreach (var storkeId in unit.StrokeIds)
+            {
+                var stroke = inkStrokes.Find(item => item.Id == storkeId);
+            }
+
+            foreach (var storkeId in unit.StrokeIds)
+            {
+                var stroke = inkStrokes.Find(item => item.Id == storkeId);
+                long cur = 0;
+                foreach (var p in stroke.Points.ToList())
+                {
+                    if (cur % skip == 0)
+                    {
+                        this.LittleRects.Add(GetRectangle(p, 5));
+                    }
+                    cur++;
+                }
+            }
         }
 
         public override string ToString()

@@ -117,6 +117,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Helpers\BotGenerator.cs" />
+    <Compile Include="Helpers\GraphHelper.cs" />
     <Compile Include="HTTP\LuisRecognizer.cs" />
     <Compile Include="JSON\Converter\InkRecognitionResponseConverter.cs" />
     <Compile Include="JSON\Converter\InkPointsToStringConverter.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="JSON\Format\PointDetailsPattern.cs" />
     <Compile Include="JSON\Format\Rectangle.cs" />
     <Compile Include="Model\ComposerBot.cs" />
+    <Compile Include="Model\DrawsomeObj.cs" />
     <Compile Include="Model\DrawsomePic.cs" />
     <Compile Include="Model\DrawsomeLine.cs" />
     <Compile Include="Model\DrawsomeShape.cs" />

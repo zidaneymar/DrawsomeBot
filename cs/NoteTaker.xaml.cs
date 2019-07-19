@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Popups;
 using System.Linq;
+using Windows.UI;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -73,51 +74,48 @@ namespace NoteTaker
             }
         }
 
-        private void DrawingDebugInfoForShape(DrawsomeShape shape)
+        private Contoso.NoteTaker.JSON.Format.Rectangle GetRectangle(Windows.UI.Input.Inking.InkPoint p, float size = 2.0f)
         {
-            var inchToMillimeterFactor = 25.4f;
-            List<Point> points = new List<Point>();
-            var scalingX = DpiX / inchToMillimeterFactor;
-            var scalingY = DpiY / inchToMillimeterFactor;
-            points.Add(new Point(shape.BoundingRect.TopX * scalingX, shape.BoundingRect.TopY * scalingY));
-            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, shape.BoundingRect.TopY * scalingY));
-            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
-            points.Add(new Point(shape.BoundingRect.TopX * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+            var res = new Contoso.NoteTaker.JSON.Format.Rectangle();
+            res.TopX = (float)(p.Position.X - size / 2);
+            res.TopY = (float)(p.Position.Y - size / 2);
+            res.Width = size;
+            res.Height = size;
+            return res;
+        }
+        private void DrawStorkes(DrawsomePic pic)
+        {
+            var lines = pic.AllLines;
 
-            Polygon polygon = new Polygon();
-
-            foreach (Point point in points)
+            foreach (var line in lines)
             {
-                polygon.Points.Add(point);
+                foreach (var rect in line.LittleRects)
+                {
+                    var poly = GetPolygon(rect, ColorHelper.FromArgb(255, 255, 255, 0));
+                    recogCanvas.Children.Add(poly);
+                }
             }
-
-            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 255));
-            polygon.Stroke = brush;
-            polygon.StrokeThickness = 1;
-            debugCanvas.Children.Add(polygon);
-
-            if (shape.Next != null)
+        }
+        
+        private void DrawRect(DrawsomePic pic)
+        {
+            foreach (var shape in pic.AllShapes)
             {
-                DrawingDebugInfoForLine(shape.Next);
+                debugCanvas.Children.Add(GetPolygon(shape.RecogUnit.BoundingRect, ColorHelper.FromArgb(255, 0, 255, 0)));
             }
-
-            if (shape.NextFalse != null)
-            {
-                DrawingDebugInfoForLine(shape.NextFalse);
-            }
-
         }
 
-        private void DrawingDebugInfoForLine(DrawsomeLine shape)
+        private Polygon GetPolygon(Contoso.NoteTaker.JSON.Format.Rectangle obj, Color color)
         {
             var inchToMillimeterFactor = 25.4f;
             List<Point> points = new List<Point>();
             var scalingX = DpiX / inchToMillimeterFactor;
             var scalingY = DpiY / inchToMillimeterFactor;
-            points.Add(new Point(shape.BoundingRect.TopX * scalingX, shape.BoundingRect.TopY * scalingY));
-            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, shape.BoundingRect.TopY * scalingY));
-            points.Add(new Point((shape.BoundingRect.TopX + shape.BoundingRect.Width) * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
-            points.Add(new Point(shape.BoundingRect.TopX * scalingX, (shape.BoundingRect.TopY + shape.BoundingRect.Height) * scalingY));
+
+            points.Add(new Point(obj.TopX * scalingX, obj.TopY * scalingY));
+            points.Add(new Point((obj.TopX + obj.Width) * scalingX, obj.TopY * scalingY));
+            points.Add(new Point((obj.TopX + obj.Width) * scalingX, (obj.TopY + obj.Height) * scalingY));
+            points.Add(new Point(obj.TopX * scalingX, (obj.TopY + obj.Height) * scalingY));
 
             Polygon polygon = new Polygon();
 
@@ -126,42 +124,45 @@ namespace NoteTaker
                 polygon.Points.Add(point);
             }
 
-            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 0, 0));
+            var brush = new SolidColorBrush(color);
             polygon.Stroke = brush;
             polygon.StrokeThickness = 1;
-            debugCanvas.Children.Add(polygon);
+
+            return polygon;
+        }
+
+        //private void DrawingDebugInfoForShape(DrawsomeShape shape)
+        //{
+        //    debugCanvas.Children.Add(GetPolygon(shape.BoundingRect, Windows.UI.ColorHelper.FromArgb(255, 0, 0, 255)));
+
+        //    if (shape.Next != null)
+        //    {
+        //        DrawingDebugInfoForLine(shape.Next);
+        //    }
+
+        //    if (shape.NextFalse != null)
+        //    {
+        //        DrawingDebugInfoForLine(shape.NextFalse);
+        //    }
+
+        //}
+
+        //private void DrawingDebugInfoForLine(DrawsomeLine shape)
+        //{
+        //    debugCanvas.Children.Add(GetPolygon(shape.BoundingRect, ColorHelper.FromArgb(255, 255, 0, 0)));
             
-            if (shape.Next != null)
-            {
-                DrawingDebugInfoForShape(shape.Next);
-            }
-        }
+        //    if (shape.Next != null)
+        //    {
+        //        DrawingDebugInfoForShape(shape.Next);
+        //    }
+        //}
 
         private void DrawAllRecognzied(InkRecognitionRoot root)
         {
             var units = root.GetUnits().ToList();
             foreach (var unit in units)
             {
-                var inchToMillimeterFactor = 25.4f;
-                List<Point> points = new List<Point>();
-                var scalingX = DpiX / inchToMillimeterFactor;
-                var scalingY = DpiY / inchToMillimeterFactor;
-                points.Add(new Point(unit.BoundingRect.TopX * scalingX, unit.BoundingRect.TopY * scalingY));
-                points.Add(new Point((unit.BoundingRect.TopX + unit.BoundingRect.Width) * scalingX, unit.BoundingRect.TopY * scalingY));
-                points.Add(new Point((unit.BoundingRect.TopX + unit.BoundingRect.Width) * scalingX, (unit.BoundingRect.TopY + unit.BoundingRect.Height) * scalingY));
-                points.Add(new Point(unit.BoundingRect.TopX * scalingX, (unit.BoundingRect.TopY + unit.BoundingRect.Height) * scalingY));
-
-                Polygon polygon = new Polygon();
-
-                foreach (Point point in points)
-                {
-                    polygon.Points.Add(point);
-                }
-
-                var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 255, 0));
-                polygon.Stroke = brush;
-                polygon.StrokeThickness = 1;
-                recogCanvas.Children.Add(polygon);
+                recogCanvas.Children.Add(GetPolygon(unit.BoundingRect, ColorHelper.FromArgb(255,0,255,0)));
             }
         }
 
@@ -210,26 +211,28 @@ namespace NoteTaker
                     var root = inkRecognizer.GetRecognizerRoot();
                     if (root != null)
                     {
-                        var pic = new DrawsomePic(root);
+                        var pic = new DrawsomePic(root, inkRecognizer.strokes);
 
                         if (pic.Root != null)
                         {
-                            DrawingDebugInfoForShape(pic.Root);
-                            DrawAllRecognzied(root);
+                            DrawRect(pic);
+                            //DrawingDebugInfoForShape(pic.Root);
+                            //DrawAllRecognzied(root);
+                            DrawStorkes(pic);
                             //output.Text = pic.ToString();
-                            var composerBot = await BotGenerator.Parse(pic);
-                            var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
+                            //var composerBot = await BotGenerator.Parse(pic);
+                            //var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
 
-                            FileSavePicker picker = new FileSavePicker();
-                            picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                            picker.SuggestedFileName = "Main.dialog";
-                            StorageFile file = await picker.PickSaveFileAsync();
+                            //FileSavePicker picker = new FileSavePicker();
+                            //picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                            //picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                            //picker.SuggestedFileName = "Main.dialog";
+                            //StorageFile file = await picker.PickSaveFileAsync();
 
-                            if (file != null)
-                            {
-                                await FileIO.WriteTextAsync(file, composerJson);
-                            }
+                            //if (file != null)
+                            //{
+                            //    await FileIO.WriteTextAsync(file, composerJson);
+                            //}
                         }
                     }
                 }
