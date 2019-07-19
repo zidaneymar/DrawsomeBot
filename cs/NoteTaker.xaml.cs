@@ -202,6 +202,8 @@ namespace NoteTaker
         {
             try
             {
+                recogCanvas.Children.Clear();
+                debugCanvas.Children.Clear();
                 var status = await inkRecognizer.RecognizeAsync();
                 if (status == HttpStatusCode.OK)
                 {
