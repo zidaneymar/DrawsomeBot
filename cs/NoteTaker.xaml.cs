@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Popups;
+using System.Linq;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -60,6 +61,7 @@ namespace NoteTaker
             DpiY = displayInfo.RawDpiY;
 
             debugCanvas.Visibility = Visibility.Collapsed;
+            recogCanvas.Visibility = Visibility.Collapsed;
         }
 
 
@@ -135,6 +137,35 @@ namespace NoteTaker
             }
         }
 
+        private void DrawAllRecognzied(InkRecognitionRoot root)
+        {
+            var units = root.GetUnits().ToList();
+            foreach (var unit in units)
+            {
+                var inchToMillimeterFactor = 25.4f;
+                List<Point> points = new List<Point>();
+                var scalingX = DpiX / inchToMillimeterFactor;
+                var scalingY = DpiY / inchToMillimeterFactor;
+                points.Add(new Point(unit.BoundingRect.TopX * scalingX, unit.BoundingRect.TopY * scalingY));
+                points.Add(new Point((unit.BoundingRect.TopX + unit.BoundingRect.Width) * scalingX, unit.BoundingRect.TopY * scalingY));
+                points.Add(new Point((unit.BoundingRect.TopX + unit.BoundingRect.Width) * scalingX, (unit.BoundingRect.TopY + unit.BoundingRect.Height) * scalingY));
+                points.Add(new Point(unit.BoundingRect.TopX * scalingX, (unit.BoundingRect.TopY + unit.BoundingRect.Height) * scalingY));
+
+                Polygon polygon = new Polygon();
+
+                foreach (Point point in points)
+                {
+                    polygon.Points.Add(point);
+                }
+
+                var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 255, 0));
+                polygon.Stroke = brush;
+                polygon.StrokeThickness = 1;
+                recogCanvas.Children.Add(polygon);
+            }
+        }
+
+
         private void Debug_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSwitch toggleSwitch = sender as ToggleSwitch;
@@ -147,6 +178,22 @@ namespace NoteTaker
                 else
                 {
                     debugCanvas.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void ShowAllRecognized_Clicked(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch != null)
+            {
+                if (toggleSwitch.IsOn == true)
+                {
+                    recogCanvas.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    recogCanvas.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -166,6 +213,7 @@ namespace NoteTaker
                         if (pic.Root != null)
                         {
                             DrawingDebugInfoForShape(pic.Root);
+                            DrawAllRecognzied(root);
                             //output.Text = pic.ToString();
                             var composerBot = await BotGenerator.Parse(pic);
                             var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);

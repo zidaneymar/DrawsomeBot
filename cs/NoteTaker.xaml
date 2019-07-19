@@ -12,6 +12,12 @@
         <ScrollViewer ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="20" HorizontalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
               VerticalScrollBarVisibility="Visible" BorderBrush="LightBlue" BorderThickness="2">
             <Border Grid.Row ="0" BorderBrush="Black" BorderThickness="1">
+                <Canvas x:Name="recogCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+        </ScrollViewer>
+        <ScrollViewer ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="20" HorizontalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+              VerticalScrollBarVisibility="Visible" BorderBrush="LightBlue" BorderThickness="2">
+            <Border Grid.Row ="0" BorderBrush="Black" BorderThickness="1">
                 <Canvas x:Name="debugCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Border>
         </ScrollViewer>
@@ -29,7 +35,10 @@
             <Button Content="Get Storkes And Save" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="32"/>
         </Border>
         <Border>
-            <ToggleSwitch Header="Debug Mode" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,10"></ToggleSwitch>
+            <ToggleSwitch Header="Show All Structured" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20"></ToggleSwitch>
+        </Border>
+        <Border>
+            <ToggleSwitch Header="Show All Recognized" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20"></ToggleSwitch>
         </Border>
     </Grid>
 </Page>
