@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-
 namespace NoteTaker.Model
 {
     public enum ShapeType
@@ -103,6 +102,15 @@ namespace NoteTaker.Model
             return 0;
         }
 
+        public bool IntersectWith(InkRecognitionUnit unit)
+        {
+            return this.BoundingRect.IntersectWith(unit.BoundingRect);
+        }
+
+        public float OverlapSize(InkRecognitionUnit unit)
+        {
+            return this.BoundingRect.OverlapSize(unit.BoundingRect);
+        }
 
         public override string ToString()
         {
