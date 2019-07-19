@@ -17,6 +17,7 @@ using Windows.Foundation;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Popups;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -30,11 +31,8 @@ namespace NoteTaker
         InkRecognizer inkRecognizer;
         DisplayInformation displayInfo;
 
-        private readonly DispatcherTimer dispatcherTimer;
         private readonly float DpiX;
         private readonly float DpiY;
-        // Time to wait before triggering ink recognition operation
-        const double IDLE_WAITING_TIME = 1000;
 
         public NoteTaker()
         {
@@ -50,8 +48,6 @@ namespace NoteTaker
             var inkPresenter = inkCanvas.InkPresenter;
             inkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Mouse;
 
-            inkPresenter.StrokeInput.StrokeStarted += InkPresenter_StrokeInputStarted;
-            inkPresenter.StrokeInput.StrokeEnded += InkPresenter_StrokeInputEnded;
             inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkPresenter.StrokesErased += InkPresenter_StrokesErased;
 
@@ -62,31 +58,17 @@ namespace NoteTaker
 
             DpiX = displayInfo.RawDpiX;
             DpiY = displayInfo.RawDpiY;
-            //dispatcherTimer = new DispatcherTimer();
-            //dispatcherTimer.Tick += DispatcherTimer_Tick;
-            //dispatcherTimer.Interval = TimeSpan.FromMilliseconds(IDLE_WAITING_TIME);
+
+            debugCanvas.Visibility = Visibility.Collapsed;
         }
 
-        private void InkPresenter_StrokeInputStarted(Windows.UI.Input.Inking.InkStrokeInput sender, PointerEventArgs args)
-        {
-            //StopTimer();
-        }
-
-        private void InkPresenter_StrokeInputEnded(Windows.UI.Input.Inking.InkStrokeInput sender, PointerEventArgs args)
-        {
-            //StartTimer();
-        }
 
         private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
         {
-            //StopTimer();
-
             foreach (var stroke in args.Strokes)
             {
                 inkRecognizer.AddStroke(stroke);
             }
-
-            //StartTimer();
         }
 
         private void DrawingDebugInfoForShape(DrawsomeShape shape)
@@ -109,7 +91,7 @@ namespace NoteTaker
 
             var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 255));
             polygon.Stroke = brush;
-            polygon.StrokeThickness = 2;
+            polygon.StrokeThickness = 1;
             debugCanvas.Children.Add(polygon);
 
             if (shape.Next != null)
@@ -144,12 +126,28 @@ namespace NoteTaker
 
             var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 0, 0));
             polygon.Stroke = brush;
-            polygon.StrokeThickness = 2;
+            polygon.StrokeThickness = 1;
             debugCanvas.Children.Add(polygon);
             
             if (shape.Next != null)
             {
                 DrawingDebugInfoForShape(shape.Next);
+            }
+        }
+
+        private void Debug_Clicked(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch != null)
+            {
+                if (toggleSwitch.IsOn == true)
+                {
+                    debugCanvas.Visibility = Visibility.Visible;   
+                }
+                else
+                {
+                    debugCanvas.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
@@ -188,45 +186,17 @@ namespace NoteTaker
             }
             catch (Exception ex)
             {
-                //output.Text = OutputWriter.PrintError(ex.Message);
+                var messageDialog = new MessageDialog(ex.Message);
+                await messageDialog.ShowAsync();
             }
         }
 
         private void InkPresenter_StrokesErased(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesErasedEventArgs args)
         {
-            //StopTimer();
-
             foreach (var stroke in args.Strokes)
             {
                 inkRecognizer.RemoveStroke(stroke.Id);
             }
-
-            //StartTimer();
         }
-
-        //private async void DispatcherTimer_Tick(object sender, object e)
-        //{
-        //    StopTimer();
-
-        //    try
-        //    {
-        //        var status = await inkRecognizer.RecognizeAsync();
-        //        if (status == HttpStatusCode.OK)
-        //        {
-        //            var root = inkRecognizer.GetRecognizerRoot();
-        //            if (root != null)
-        //            {
-        //                output.Text = OutputWriter.Print(root);
-        //            }
-        //        }
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        output.Text = OutputWriter.PrintError(ex.Message);
-        //    }
-        //}
-
-        //public void StartTimer() => dispatcherTimer.Start();
-        //public void StopTimer() => dispatcherTimer.Stop();
     }
 }

@@ -28,5 +28,8 @@
         <Border>
             <Button Content="Get Storkes And Save" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="32"/>
         </Border>
+        <Border>
+            <ToggleSwitch Header="Debug Mode" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,10"></ToggleSwitch>
+        </Border>
     </Grid>
 </Page>
