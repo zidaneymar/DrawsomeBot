@@ -35,10 +35,10 @@
             <Button Content="Get Storkes And Save" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="32"/>
         </Border>
         <Border>
-            <ToggleSwitch Header="Show All Structured" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20"></ToggleSwitch>
+            <ToggleSwitch Header="Show All Structured" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
         </Border>
         <Border>
-            <ToggleSwitch Header="Show All Recognized" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20"></ToggleSwitch>
+            <ToggleSwitch Header="Show All Recognized" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
         </Border>
     </Grid>
 </Page>
