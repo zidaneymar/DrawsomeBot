@@ -46,7 +46,7 @@ namespace NoteTaker.Model
                 this.AllUnits.Add(unitToAdd);
             }
 
-            var inkLines = root.GetUnits().Where(item => (item as InkDrawing).RecognizedShape == DrawingShapeKind.Drawing);
+            var inkLines = root.GetUnits().Where(item => (item as InkDrawing)?.RecognizedShape == DrawingShapeKind.Drawing);
 
             foreach (var line in inkLines)
             {
@@ -57,18 +57,22 @@ namespace NoteTaker.Model
             foreach (var dShape in this.AllShapes)
             {
                 var nextLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesBegin(item)).Where(item => dShape.OverlapSizeWithLinesBegin(item) != 0);
-                var nextLine = nextLines.FirstOrDefault();
-                if (nextLine != null)
+                foreach (var nextLine in nextLines)
                 {
                     dShape.Next.Add(nextLine);
                 }
 
                 var prevLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesEnd(item)).Where(item => dShape.OverlapSizeWithLinesEnd(item) != 0);
-                var prevLine = prevLines.FirstOrDefault();
-                if (prevLine != null)
+                foreach (var prevLine in prevLines)
                 {
                     prevLine.Next.Add(dShape);
                 }
+            }
+
+            // reorder the next of each shape to ensure the colored lines behind
+            foreach (var dShape in this.AllShapes)
+            {
+                dShape.Next.Sort((A, B) => (A as DrawsomeLine)?.MainStroke.inkStrokeInternal.DrawingAttributes.Color.R > (B as DrawsomeLine)?.MainStroke.inkStrokeInternal.DrawingAttributes.Color.R ? 1 : -1);
             }
 
         }

@@ -12,6 +12,7 @@ namespace NoteTaker.Model
     {
         Rect,
         Diamond,
+        Ellipse,
         Undetermined
     }
 
@@ -35,6 +36,9 @@ namespace NoteTaker.Model
                     break;
                 case DrawingShapeKind.Diamond:
                     this.Type = ShapeType.Diamond;
+                    break;
+                case DrawingShapeKind.Ellipse:
+                    this.Type = ShapeType.Ellipse;
                     break;
                 default:
                     this.Type = ShapeType.Undetermined;

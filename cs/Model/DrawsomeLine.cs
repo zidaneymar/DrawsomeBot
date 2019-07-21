@@ -11,6 +11,8 @@ namespace NoteTaker.Model
     {
         public List<Rectangle> LittleRects { get; set; } = new List<Rectangle>();
 
+        public InkRecognizerStroke MainStroke { get; set; }
+
         private Rectangle GetRectangle(Windows.UI.Input.Inking.InkPoint p, float size = 4.0f)
         {
             var res = new Contoso.NoteTaker.JSON.Format.Rectangle();
@@ -23,31 +25,33 @@ namespace NoteTaker.Model
 
         public DrawsomeLine(InkRecognitionUnit unit, List<InkRecognizerStroke> inkStrokes, int skip = 10): base(unit)
         {
-            var lineStores = new List<InkRecognizerStroke>();
+            var mainStrokeId = unit.StrokeIds.OrderByDescending(id => CalPointDistance(inkStrokes.Find(item => item.Id == id))).First();
+            var mainStroke = inkStrokes.Find(item => item.Id == mainStrokeId);
+            this.MainStroke = mainStroke;
 
-            foreach (var storkeId in unit.StrokeIds)
-            {
-                var stroke = inkStrokes.Find(item => item.Id == storkeId);
-            }
+            long cur = 0;
 
-            foreach (var storkeId in unit.StrokeIds)
+            foreach (var p in mainStroke.Points.ToList())
             {
-                var stroke = inkStrokes.Find(item => item.Id == storkeId);
-                long cur = 0;
-                foreach (var p in stroke.Points.ToList())
+                if (cur % skip == 0)
                 {
-                    if (cur % skip == 0)
-                    {
-                        this.LittleRects.Add(GetRectangle(p, 5));
-                    }
-                    cur++;
+                    // use skip as size
+                    this.LittleRects.Add(GetRectangle(p, skip));
                 }
+                cur++;
             }
+        }
+
+        private double CalPointDistance(InkRecognizerStroke stroke)
+        {
+            return Math.Pow(stroke.Points.First().Position.X - stroke.Points.Last().Position.X, 2)
+                + Math.Pow(stroke.Points.First().Position.Y - stroke.Points.Last().Position.Y, 2);
         }
 
         public override string ToString()
         {
             return "->" + Next.ToString();
         }
+
     }
 }
