@@ -220,19 +220,19 @@ namespace NoteTaker
                             //DrawAllRecognzied(root);
                             DrawStorkes(pic);
                             //output.Text = pic.ToString();
-                            //var composerBot = await BotGenerator.Parse(pic);
-                            //var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
+                            var composerBot = await BotGenerator.Parse(pic);
+                            var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
 
-                            //FileSavePicker picker = new FileSavePicker();
-                            //picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                            //picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                            //picker.SuggestedFileName = "Main.dialog";
-                            //StorageFile file = await picker.PickSaveFileAsync();
+                            FileSavePicker picker = new FileSavePicker();
+                            picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                            picker.SuggestedFileName = "Main.dialog";
+                            StorageFile file = await picker.PickSaveFileAsync();
 
-                            //if (file != null)
-                            //{
-                            //    await FileIO.WriteTextAsync(file, composerJson);
-                            //}
+                            if (file != null)
+                            {
+                                await FileIO.WriteTextAsync(file, composerJson);
+                            }
                         }
                     }
                 }

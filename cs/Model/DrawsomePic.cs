@@ -24,7 +24,12 @@ namespace NoteTaker.Model
         public DrawsomePic(InkRecognitionRoot root, List<InkRecognizerStroke> inkStrokes)
         {
             this.InkRoot = root;
-            this.Root = new DrawsomeShape(root.GetShapes().ToList().OrderBy(item => item.BoundingRect.TopY).First());
+            if (root.GetShapes().Count() == 0)
+            {
+                throw new Exception("The Graph is Empty");
+            }
+
+            //this.Root = new DrawsomeShape(root.GetShapes().ToList().OrderBy(item => item.BoundingRect.TopY).First());
 
             // get all recognized shapes and set the text belonged to them
             foreach (var shape in root.GetShapes())
@@ -75,6 +80,7 @@ namespace NoteTaker.Model
                 dShape.Next.Sort((A, B) => (A as DrawsomeLine)?.MainStroke.inkStrokeInternal.DrawingAttributes.Color.R > (B as DrawsomeLine)?.MainStroke.inkStrokeInternal.DrawingAttributes.Color.R ? 1 : -1);
             }
 
+            this.Root = this.AllShapes.OrderBy(item => item.RecogUnit.BoundingRect.TopY).FirstOrDefault();
         }
 
 

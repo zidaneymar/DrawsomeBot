@@ -11,115 +11,112 @@ namespace NoteTaker.Helpers
 {
     public static class BotGenerator
     {
-        //public static async Task<ComposerBot> Parse(DrawsomePic pic)
-        //{
-        //    var root = pic.Root;
+        public static async Task<ComposerBot> Parse(DrawsomePic pic)
+        {
+            var root = pic.Root;
+            
+            return new ComposerBot(await BuildFromStepUntil(pic, root, null));
+        }
 
-        //    var steps = new List<ComposerStep>();
+        public static async Task<ComposerStep> BuildComposerStepFromShape(DrawsomeShape shape)
+        {
+            var query = shape.Text;
+            var luisResponse = await new LuisRecognizer("447f0c99416f450598e97ba887644f95", "e60298ef-464f-457b-9ea4-6f7791b350fd").GetPrediction(query);
 
-        //    while (root != null)
-        //    {
-        //        // if the root is if condition, then parse it by single step and break out.
-        //        if (root.NextFalse != null)
-        //        {
-        //            steps.Add(await BotGenerator.Parse(root));
-        //            break;
-        //        }
+            var content = GetContent(luisResponse);
 
-        //        // else parse step by step iteratly
-        //        steps.Add(await BotGenerator.Parse(root));
-        //        if (root.Next != null)
-        //        {
-        //            root = root.Next.Next;
-        //        }
-        //        else
-        //        {
-        //            break;
-        //        }
-        //    }
+            var shapeType = luisResponse.TopScoringIntent?.Intent;
 
-        //    return new ComposerBot(steps);
-        //}
+            switch (shapeType)
+            {
+                case nameof(IfCondition):
+                    return new IfCondition(content);
 
-        //public static async Task<List<ComposerStep>> ParseSteps(DrawsomePic pic)
-        //{
-        //    var root = pic.Root;
+                case nameof(SetProperty):
+                    return new SetProperty(content ?? query);
 
-        //    var steps = new List<ComposerStep>();
+                case nameof(TextInput):
+                    return new TextInput(content ?? query);
 
-        //    while (root != null)
-        //    {
-        //        steps.Add(await BotGenerator.Parse(root));
-        //        if (root.Next != null)
-        //        {
-        //            root = root.Next.Next;
-        //        }
-        //        else
-        //        {
-        //            break;
-        //        }
-        //    }
+                case nameof(HttpRequest):
+                    return new HttpRequest(content ?? query);
 
-        //    return steps;
-        //}
+                case nameof(SendActivity):
+                default:
+                    return new SendActivity(content ?? query);
+            }
 
-        //public static async Task<dynamic> Parse(DrawsomeShape shape)
-        //{
-        //    dynamic step = null;
-        //    var query = shape.Text;
-        //    var luisResponse = await new LuisRecognizer("447f0c99416f450598e97ba887644f95", "e60298ef-464f-457b-9ea4-6f7791b350fd").GetPrediction(query);
+        }
 
-        //    var content = GetContent(luisResponse);
+        // return a list of step from cur root
+        public static async Task<List<ComposerStep>> BuildFromStepUntil(DrawsomePic pic, DrawsomeObj root, DrawsomeObj target)
+        {
+            var steps = new List<ComposerStep>();
+            
+            if (root == target)
+            {
+                return steps;
+            }
 
-        //    string shapeType = string.Empty;
-        //    switch (shape.Type)
-        //    {
-        //        case ShapeType.Diamond:
-        //            shapeType = nameof(IfCondition);
-        //            break;
-        //    }
+            // only one next
+            if (root.Next.Count != 2)
+            {
+                if (root is DrawsomeShape)
+                {
+                    steps.Add(await BuildComposerStepFromShape(root as DrawsomeShape));
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target));
+                }
+                else if (root is DrawsomeLine)
+                {
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target));
+                }
+            }
 
-        //    if (string.IsNullOrEmpty(shapeType))
-        //    {
-        //        shapeType = luisResponse.TopScoringIntent?.Intent;
-        //    }
+            if (root.Next.Count == 2)
+            {
+                if (root is DrawsomeShape)
+                {
+                    var firstCommon = NearestObj(pic, root);
+                    var step = new IfCondition((root as DrawsomeShape).Text);
+                    step.Steps = await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), firstCommon);
+                    step.ElseSteps = await BuildFromStepUntil(pic, root.Next.LastOrDefault(), firstCommon);
+                    steps.Add(step);
+                    steps.AddRange(await BuildFromStepUntil(pic, firstCommon, target));
+                }
+            }
 
-        //    if (shape.NextFalse != null)
-        //    {
-        //        shapeType = nameof(IfCondition);
-        //    }
+            return steps;
+        }
 
-        //    switch (shapeType)
-        //    {
-        //        case nameof(IfCondition):
-        //            step = new IfCondition(content ?? query);
-        //            if (shape.Next.Next != null)
-        //            {
-        //                (step as IfCondition).Steps = await ParseSteps(new DrawsomePic(shape.Next.Next));
-        //            }
 
-        //            if (shape.NextFalse.Next != null)
-        //            {
-        //                (step as IfCondition).ElseSteps = await ParseSteps(new DrawsomePic(shape.NextFalse.Next));
-        //            }
-        //            break;
+        private static DrawsomeObj NearestObj(DrawsomePic pic, DrawsomeObj root)
+        {
+            var trueList = new List<DrawsomeObj>();
 
-        //        case nameof(SetProperty):
-        //            step = new SetProperty(content ?? query);
-        //            break;
+            var trueRoot = root.Next?[0];
 
-        //        case nameof(HttpRequest):
-        //            step = new HttpRequest();
-        //            break;
+            while (trueRoot != null)
+            {
+                trueList.Add(trueRoot);
+                trueRoot = trueRoot.Next.FirstOrDefault();
+            }
+            var falseList = new List<DrawsomeObj>();
 
-        //        case nameof(SendActivity):
-        //        default:
-        //            step = new SendActivity(content ?? query);
-        //            break;
-        //    }
+            var falseRoot = root.Next?[1];
 
-        //    return step;
-        //}
+            while (falseRoot != null)
+            {
+                falseList.Add(falseRoot);
+                falseRoot = falseRoot.Next.FirstOrDefault();
+            }
+
+            var commonList = trueList.Intersect(falseList);
+
+            var firstCommon = commonList?.FirstOrDefault();
+
+            return firstCommon;
+            
+        }
 
         public static string GetContent(LuisResult luisResponse)
         {

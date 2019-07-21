@@ -14,6 +14,16 @@ namespace NoteTaker.Model
 
         [JsonProperty(PropertyName = "property")]
         public string Property = "";
+
+        public ComposerStep()
+        {
+
+        }
+
+        public ComposerStep(DrawsomeObj shape)
+        {
+            
+        }
     }
 
     public class SendActivity : ComposerStep
@@ -46,6 +56,19 @@ namespace NoteTaker.Model
         }
     }
 
+    public class TextInput : ComposerStep
+    {
+        [JsonProperty(PropertyName = "prompt")]
+        public string Prompt;
+
+        public TextInput(string content)
+        {
+            this.Prompt = content;
+            this.Type = "Microsoft.TextInput";
+        }
+    }
+
+
     public class SetProperty: ComposerStep
     {
         [JsonProperty(PropertyName = "value")]
@@ -62,9 +85,22 @@ namespace NoteTaker.Model
 
     public class HttpRequest: ComposerStep
     {
-        public HttpRequest()
+        [JsonProperty("method")]
+        public string Method { get; set; }
+
+        [JsonProperty("url")]
+        public string Url { get; set; }
+
+        public HttpRequest(string content)
         {
             this.Type = "Microsoft.HttpRequest";
+            if (content.ToLower().Contains("weather"))
+            {
+                this.Url = "https://api.openweathermap.org/data/2.5/weather?q=Suzhou&appid=f6abd7e76544272a97a0f1e9c2188219";
+                this.Method = "GET";
+            }
         }
     }
+
+   
 }
