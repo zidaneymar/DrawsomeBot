@@ -5,10 +5,35 @@
     xmlns:local="using:NoteTaker"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Windows10version1809="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 7)"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <Flyout x:Name="myFlyout" Closed="MyFlyout_Closed">
+            <StackPanel>
+                <TextBlock Text="Step Settings" Style="{StaticResource TitleTextBlockStyle}"></TextBlock>
+                <ComboBox Header ="Step Type" x:Name="Type" Margin="10,10,0,0" PlaceholderText="" Width="Auto" SelectionChanged="Type_SelectionChanged">
+                    <x:String>Microsoft.SendActivity</x:String>
+                    <x:String>Microsoft.IfCondition</x:String>
+                    <x:String>Microsoft.HttpRequest</x:String>
+                    <x:String>Microsoft.TextInput</x:String>
+                    <x:String>Microsoft.SetProperty</x:String>
+                </ComboBox>
+                <TextBox x:Name="activity" Header= "Activity" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForActivity(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="property" Header= "Property" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForProperty(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="condition" Header= "Contition" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForCondition(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="url" Header= "Url" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="method" Header= "Method" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="body" Header= "Body" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="prompt" Header= "Prompt" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForPrompt(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="value" Header= "Value" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForValue(Type.SelectedValue),Mode=OneWay}" />
+
+            </StackPanel>
+        </Flyout>
+    </Page.Resources>
 
     <Grid>
+
         <ScrollViewer ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="20" HorizontalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
               VerticalScrollBarVisibility="Visible" BorderBrush="LightBlue" BorderThickness="2">
             <Border Grid.Row ="0" BorderBrush="Black" BorderThickness="1">
@@ -27,18 +52,35 @@
                 <InkCanvas x:Name="inkCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Border>
         </ScrollViewer>
-       
+
         <Border>
             <InkToolbar x:Name="inkToolbar" VerticalAlignment="Bottom" HorizontalAlignment="Center" TargetInkCanvas="{x:Bind inkCanvas}"></InkToolbar>
         </Border>
-        <Border>
-            <Button Content="Get Storkes And Save" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="32"/>
-        </Border>
-        <Border>
-            <ToggleSwitch Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
-        </Border>
-        <Border>
-            <ToggleSwitch Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
-        </Border>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0">
+                <Button Content="Analyze" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+            </Border>
+            <Border Grid.Row="1">
+                <Button Content="Generate" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100" Background="#FF93D700"/>
+            </Border>
+            <Border Grid.Row="2">
+                <ToggleSwitch Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
+            </Border>
+            <Border Grid.Row="3">
+                <ToggleSwitch Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
+            </Border>
+            <Border Grid.Row="4">
+                <ToggleSwitch Header="Edit Mode" OffContent="Off" OnContent="On" Toggled="Edit_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
+            </Border>
+        </Grid>
     </Grid>
 </Page>

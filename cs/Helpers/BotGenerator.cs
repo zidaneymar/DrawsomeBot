@@ -14,8 +14,13 @@ namespace NoteTaker.Helpers
         public static async Task<ComposerBot> Parse(DrawsomePic pic)
         {
             var root = pic.Root;
-            
-            return new ComposerBot(await BuildFromStepUntil(pic, root, null));
+
+            var allSteps = new List<ComposerStep>();
+
+            var rootSteps = await BuildFromStepUntil(pic, root, null, allSteps);
+            var bot = new ComposerBot(rootSteps);
+            bot.AllSteps = allSteps;
+            return bot;
         }
 
         public static async Task<ComposerStep> BuildComposerStepFromShape(DrawsomeShape shape)
@@ -30,26 +35,31 @@ namespace NoteTaker.Helpers
             switch (shapeType)
             {
                 case nameof(IfCondition):
-                    return new IfCondition(content);
+                    var ifStep = new IfCondition(content, shape);
+                    return ifStep;
 
                 case nameof(SetProperty):
-                    return new SetProperty(content ?? query);
+                    var setStep = new SetProperty(content ?? query, shape);
+                    return setStep;
 
                 case nameof(TextInput):
-                    return new TextInput(content ?? query);
+                    var textStep = new TextInput(content ?? query, shape);
+                    return textStep;
 
                 case nameof(HttpRequest):
-                    return new HttpRequest(content ?? query);
+                    var httpStep = new HttpRequest(content ?? query, shape);
+                    return httpStep;
 
                 case nameof(SendActivity):
                 default:
-                    return new SendActivity(content ?? query);
+                    var sendStep = new SendActivity(content ?? query, shape);
+                    return sendStep;
             }
 
         }
 
         // return a list of step from cur root
-        public static async Task<List<ComposerStep>> BuildFromStepUntil(DrawsomePic pic, DrawsomeObj root, DrawsomeObj target)
+        public static async Task<List<ComposerStep>> BuildFromStepUntil(DrawsomePic pic, DrawsomeObj root, DrawsomeObj target, List<ComposerStep> allSteps)
         {
             var steps = new List<ComposerStep>();
             
@@ -63,12 +73,14 @@ namespace NoteTaker.Helpers
             {
                 if (root is DrawsomeShape)
                 {
-                    steps.Add(await BuildComposerStepFromShape(root as DrawsomeShape));
-                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target));
+                    var step = await BuildComposerStepFromShape(root as DrawsomeShape);
+                    steps.Add(step);
+                    allSteps.Add(step);
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps));
                 }
                 else if (root is DrawsomeLine)
                 {
-                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target));
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps));
                 }
             }
 
@@ -77,11 +89,12 @@ namespace NoteTaker.Helpers
                 if (root is DrawsomeShape)
                 {
                     var firstCommon = NearestObj(pic, root);
-                    var step = new IfCondition((root as DrawsomeShape).Text);
-                    step.Steps = await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), firstCommon);
-                    step.ElseSteps = await BuildFromStepUntil(pic, root.Next.LastOrDefault(), firstCommon);
+                    var step = new IfCondition((root as DrawsomeShape).Text, root as DrawsomeShape);
+                    allSteps.Add(step);
+                    step.Steps = await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), firstCommon, allSteps);
+                    step.ElseSteps = await BuildFromStepUntil(pic, root.Next.LastOrDefault(), firstCommon, allSteps);
                     steps.Add(step);
-                    steps.AddRange(await BuildFromStepUntil(pic, firstCommon, target));
+                    steps.AddRange(await BuildFromStepUntil(pic, firstCommon, target, allSteps));
                 }
             }
 

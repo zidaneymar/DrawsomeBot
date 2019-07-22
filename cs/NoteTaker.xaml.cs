@@ -36,6 +36,24 @@ namespace NoteTaker
         private readonly float DpiX;
         private readonly float DpiY;
 
+        public ComposerStep curEditingStep;
+
+        private ComposerBot botInstance;
+
+        private readonly Dictionary<string, int> TypeToIndex = new Dictionary<string, int>()
+        {
+            //<x:String>Microsoft.SendActivity</x:String>
+            //        <x:String>Microsoft.IfCondition</x:String>
+            //        <x:String>Microsoft.HttpRequest</x:String>
+            //        <x:String>Microsoft.TextInput</x:String>
+            //        <x:String>Microsfot.SetProperty</x:String>
+            { "Microsoft.SendActivity", 0 },
+            { "Microsoft.IfCondition", 1 },
+            { "Microsoft.HttpRequest", 2 },
+            { "Microsoft.TextInput", 3 },
+            { "Microsoft.SetProperty", 4 },
+        };
+
         public NoteTaker()
         {
             this.InitializeComponent();
@@ -50,6 +68,7 @@ namespace NoteTaker
             var inkPresenter = inkCanvas.InkPresenter;
             inkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Mouse;
 
+            inkCanvas.RightTapped += InkCanvas_RightTapped;
             inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkPresenter.StrokesErased += InkPresenter_StrokesErased;
 
@@ -57,7 +76,7 @@ namespace NoteTaker
 
             displayInfo = DisplayInformation.GetForCurrentView();
             inkRecognizer.SetDisplayInformation(displayInfo);
-
+             
             DpiX = displayInfo.RawDpiX;
             DpiY = displayInfo.RawDpiY;
 
@@ -65,6 +84,106 @@ namespace NoteTaker
             recogCanvas.Visibility = Visibility.Collapsed;
         }
 
+        private async void InkCanvas_PointerReleased(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}", e.GetCurrentPoint(inkCanvas).Position.X, e.GetCurrentPoint(inkCanvas).Position.Y));
+            await messageBox.ShowAsync();
+        }
+
+        private Flyout GetStepSettings()
+        {
+            var fly = this.Resources["myFlyout"] as Flyout;
+
+            
+
+
+            return fly;
+        }
+
+        public static Visibility GetVisibilityForActivity(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() == "Microsoft." + nameof(SendActivity) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public static Visibility GetVisibilityForProperty(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() != "Microsoft." + nameof(IfCondition) && type.ToString() != "Microsoft." + nameof(SendActivity) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public static Visibility GetVisibilityForCondition(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() == "Microsoft." + nameof(IfCondition) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public static Visibility GetVisibilityForHttp(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() == "Microsoft." + nameof(HttpRequest) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public static Visibility GetVisibilityForPrompt(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() == "Microsoft." + nameof(TextInput) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public static Visibility GetVisibilityForValue(object type)
+        {
+            if (type == null)
+            {
+                return Visibility.Collapsed;
+            }
+            return type.ToString() == "Microsoft." + nameof(SetProperty) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async void InkCanvas_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+            var xCord = e.GetPosition(inkCanvas).X / scalingX;
+            var yCord = e.GetPosition(inkCanvas).Y / scalingY;
+            var step = GetRelatedStep((float)xCord, (float)yCord);
+            if (step != null)
+            {
+                //var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}\nStep Type:{2}", e.GetPosition(inkCanvas).X, e.GetPosition(inkCanvas).Y, step.Type));
+                //await messageBox.ShowAsync();
+                curEditingStep = step;
+                var fly = this.myFlyout;
+                this.Type.SelectedIndex = TypeToIndex[curEditingStep.Type];
+
+                var options = new Windows.UI.Xaml.Controls.Primitives.FlyoutShowOptions()
+                {
+                    Position = e.GetPosition(sender as UIElement)
+                };
+                fly.ShowAt(sender as FrameworkElement, options);
+            }
+            else
+            {
+                curEditingStep = null;
+                var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}, step is null", e.GetPosition(inkCanvas).X, e.GetPosition(inkCanvas).Y));
+                await messageBox.ShowAsync();
+            }
+        }
 
         private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
         {
@@ -102,8 +221,38 @@ namespace NoteTaker
             foreach (var shape in pic.AllShapes)
             {
                 debugCanvas.Children.Add(GetPolygon(shape.RecogUnit.BoundingRect, ColorHelper.FromArgb(255, 0, 255, 0)));
+                debugCanvas.Children.Add(GetPolyLocationTextBlock(shape));
             }
         }
+
+        private TextBlock GetPolyLocationTextBlock(DrawsomeShape shape)
+        {
+            TextBlock text = new TextBlock();
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+
+            Canvas.SetTop(text, shape.RecogUnit.BoundingRect.TopY * scalingY);
+            Canvas.SetLeft(text, shape.RecogUnit.BoundingRect.TopX * scalingX);
+
+            text.Text = string.Format("({0},{1})", shape.RecogUnit.BoundingRect.TopX, shape.RecogUnit.BoundingRect.TopY);
+            text.FontSize = 20;
+
+            return text;
+        }
+
+        private ComposerStep GetRelatedStep(float x, float y, float size = 10)
+        {
+            var rect = new Contoso.NoteTaker.JSON.Format.Rectangle();
+            rect.TopX = x - size / 2;
+            rect.TopY = y - size / 2;
+            rect.Width = size;
+            rect.Height = size;
+            return this.botInstance.AllSteps.OrderByDescending(step => step.RelatedShape.RecogUnit.BoundingRect.OverlapSize(rect))?
+                .Where(step => step.RelatedShape.RecogUnit.BoundingRect.OverlapSize(rect) > 0)?.FirstOrDefault();
+        }
+
 
         private Polygon GetPolygon(Contoso.NoteTaker.JSON.Format.Rectangle obj, Color color)
         {
@@ -221,18 +370,19 @@ namespace NoteTaker
                             DrawStorkes(pic);
                             //output.Text = pic.ToString();
                             var composerBot = await BotGenerator.Parse(pic);
-                            var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
+                            this.botInstance = composerBot;
 
-                            FileSavePicker picker = new FileSavePicker();
-                            picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                            picker.SuggestedFileName = "Main.dialog";
-                            StorageFile file = await picker.PickSaveFileAsync();
+                            //var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
+                            //FileSavePicker picker = new FileSavePicker();
+                            //picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                            //picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                            //picker.SuggestedFileName = "Main.dialog";
+                            //StorageFile file = await picker.PickSaveFileAsync();
 
-                            if (file != null)
-                            {
-                                await FileIO.WriteTextAsync(file, composerJson);
-                            }
+                            //if (file != null)
+                            //{
+                            //    await FileIO.WriteTextAsync(file, composerJson);
+                            //}
                         }
                     }
                 }
@@ -249,6 +399,108 @@ namespace NoteTaker
             foreach (var stroke in args.Strokes)
             {
                 inkRecognizer.RemoveStroke(stroke.Id);
+            }
+        }
+
+        private void Edit_Clicked(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch != null)
+            {
+                if (toggleSwitch.IsOn == true)
+                {
+                    inkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.None;
+                }
+                else
+                {
+                    inkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Mouse;
+                }
+            }
+        }
+
+        private void Type_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            curEditingStep.Type = e.AddedItems[0].ToString();
+        }
+
+        private List<ComposerStep> FindInBotInstanceAndGenerateNew(List<ComposerStep> steps, ComposerStep stepToFind)
+        {
+            var result = new List<ComposerStep>();
+
+            for (var i = 0; i < steps.Count; i++)
+            {
+                if (steps[i].RelatedShape.Equals(stepToFind.RelatedShape))
+                {
+                    var stepToReplace = steps[i];
+                    var newStep = Replace(stepToReplace);
+                    result.Add(newStep);
+                }
+                if (steps[i].Type == "Microsoft.IfCondition")
+                {
+                    var ifStep = steps[i] as IfCondition;
+                    var newIfStep = new IfCondition(ifStep.Condition, ifStep.RelatedShape);
+                    ifStep.Steps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.Steps, stepToFind));
+                    ifStep.ElseSteps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.ElseSteps, stepToFind));
+                }
+            }
+            return result;
+        }
+
+        private ComposerStep Replace(ComposerStep oldStep)
+        {
+            switch (curEditingStep.Type)
+            {
+                case "Microsoft.SendActivity":
+                default:
+                    return new SendActivity(this.activity.Text, curEditingStep.RelatedShape);
+                case "Microsoft.IfCondition":
+                    if (oldStep is IfCondition)
+                    {
+                        (oldStep as IfCondition).Condition = this.condition.Text;
+                    }
+                    return oldStep;
+                    
+                case "Microsoft.SetProperty":
+                    return new SetProperty(this.property.Text + "=" + this.value.Text, curEditingStep.RelatedShape);
+                case "Microsoft.HttpRequest":
+                    return new HttpRequest(this.url.Text, this.method.Text, this.body.Text, curEditingStep.RelatedShape);
+                case "Microsoft.TextInput":
+                    return new TextInput(this.prompt.Text, this.property.Text, curEditingStep.RelatedShape);
+                
+            }
+        }
+
+        private void MyFlyout_Closed(object sender, object e)
+        {
+            if (curEditingStep != null)
+            {
+                // ComposerStep oldStep = null;
+                this.botInstance.Steps = FindInBotInstanceAndGenerateNew(botInstance.Steps, curEditingStep);
+            }
+
+        }
+
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var composerBot = this.botInstance;
+                var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
+                FileSavePicker picker = new FileSavePicker();
+                picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                picker.SuggestedFileName = "Main.dialog";
+                StorageFile file = await picker.PickSaveFileAsync();
+
+                if (file != null)
+                {
+                    await FileIO.WriteTextAsync(file, composerJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                var messageDialog = new MessageDialog(ex.Message);
+                await messageDialog.ShowAsync();
             }
         }
     }
