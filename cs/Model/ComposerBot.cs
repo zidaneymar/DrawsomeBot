@@ -15,10 +15,13 @@ namespace NoteTaker.Model
         public bool AutoEndDialog = true;
 
         [JsonProperty(PropertyName = "steps")]
-        public List<ComposerStep> Steps;
+        public List<ComposerStep> Steps { get; set; }
 
         [JsonProperty(PropertyName = "$schema")]
         public string Schema = "../../app.schema";
+
+        [JsonIgnore]
+        public List<ComposerStep> AllSteps = new List<ComposerStep>();
 
         public ComposerBot(List<ComposerStep> steps)
         {

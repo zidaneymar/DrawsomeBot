@@ -12,6 +12,7 @@ namespace NoteTaker.Model
     {
         Rect,
         Diamond,
+        Ellipse,
         Undetermined
     }
 
@@ -21,15 +22,12 @@ namespace NoteTaker.Model
 
         public string Text { get; set; }
 
-        public DrawsomeLine Next { get; set; }
-
-        public DrawsomeLine NextFalse { get; set; }
-
         // lines contains the units have texts
         // other units contains all the units detected
-        public DrawsomeShape(InkRecognitionUnit unit, List<InkLine> lines = null, List<InkRecognitionUnit> otherUnits = null, List<InkDrawing> otherShapes = null)
+        //public DrawsomeShape(InkRecognitionUnit unit, List<InkLine> lines = null, List<InkRecognitionUnit> otherUnits = null, List<InkDrawing> otherShapes = null) : base(unit)
+        public DrawsomeShape(InkRecognitionUnit unit): base(unit)
         {
-            this.BoundingRect = unit.BoundingRect;
+            this.RecogUnit = unit;
             var drawing = unit as InkDrawing;
             switch (drawing.RecognizedShape)
             {
@@ -39,77 +37,37 @@ namespace NoteTaker.Model
                 case DrawingShapeKind.Diamond:
                     this.Type = ShapeType.Diamond;
                     break;
+                case DrawingShapeKind.Ellipse:
+                    this.Type = ShapeType.Ellipse;
+                    break;
                 default:
                     this.Type = ShapeType.Undetermined;
                     break;
             }
 
-            this.Text = lines.FindAll(item => unit.Contains((InkRecognitionUnit)item)).FirstOrDefault()?.RecognizedText;
-
-            // we need to get the enclosed line for the else condition
-            //var elseDepth = 0.0;
-
-            var nextFalseCandidate = otherUnits.ToList().FindAll(item => unit.IsRightMidAligned(item)).OrderBy(item => unit.DistanceToRight(item)).FirstOrDefault();
-            if (nextFalseCandidate != null)
-            {
-                var nextOfFalseNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextFalseCandidate.IsRightLowerLinked(item)).OrderBy(item => nextFalseCandidate.DistanceToRight(item)).FirstOrDefault();
-                if (nextOfFalseNext != null)
-                {
-                    //elseDepth = GetElseBranchDepth(nextOfFalseNext, otherUnits, otherShapes);
-                    this.NextFalse = new DrawsomeLine(nextFalseCandidate);
-                    this.NextFalse.Next = new DrawsomeShape(nextOfFalseNext, lines, otherUnits, otherShapes);
-                }
-            }
-
-
-            // Get the next line
-            var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => unit.DistanceToLower(item)).FirstOrDefault();
-
-            if (nextCandidate != null)
-            {
-                // Recursivly get the next shape
-                var nextOfNext = otherShapes.Except(new List<InkDrawing>() { drawing }).ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
-                if (nextOfNext != null)
-                {
-                    this.Next = new DrawsomeLine(nextCandidate);
-                    this.Next.Next = new DrawsomeShape(nextOfNext, lines, otherUnits, otherShapes);
-                }
-            }
-
+            //this.Text = lines.FindAll(item => unit.Contains(item)).FirstOrDefault()?.RecognizedText;
 
         }
 
-        public float GetElseBranchDepth(InkRecognitionUnit unit, List<InkRecognitionUnit> otherUnits = null, List<InkDrawing> otherShapes = null)
+        public float OverlapSizeWithLinesBegin(DrawsomeLine line, int take = 10)
         {
-            var nextCandidate = otherUnits.ToList().FindAll(item => unit.IsLowerLinked(item)).OrderBy(item => unit.DistanceToLower(item)).FirstOrDefault();
-
-            if (nextCandidate != null)
+            float res = 0;
+            foreach (var littleRect in line.LittleRects.Take(10))
             {
-                // Recursivly get the next shape
-                var nextOfNext = otherShapes.ToList().FindAll(item => nextCandidate.IsLowerLinked(item)).OrderBy(item => nextCandidate.DistanceToLower(item)).FirstOrDefault();
-
-                if (nextOfNext != null)
-                {
-                    return GetElseBranchDepth(nextOfNext, otherUnits, otherShapes);
-                }
-
-                // return the last arrow depth
-                return nextCandidate.BoundingRect.TopY + nextCandidate.BoundingRect.Height;
+                res += this.RecogUnit.BoundingRect.OverlapSize(littleRect);
             }
-
-
-            // the last one doensn't have enclosed arrow so we don't have constraints on the if true condition
-            return 0;
+            return res;
         }
 
-        public bool IntersectWith(InkRecognitionUnit unit)
-        {
-            return this.BoundingRect.IntersectWith(unit.BoundingRect);
-        }
 
-        public float OverlapSize(InkRecognitionUnit unit)
+        public float OverlapSizeWithLinesEnd(DrawsomeLine line, int take = 10)
         {
-            return this.BoundingRect.OverlapSize(unit.BoundingRect);
+            float res = 0;
+            foreach (var littleRect in line.LittleRects.Skip(Math.Max(0, line.LittleRects.Count() - take)))
+            {
+                res += this.RecogUnit.BoundingRect.OverlapSize(littleRect);
+            }
+            return res;
         }
 
         public override string ToString()

@@ -30,7 +30,7 @@ namespace Contoso.NoteTaker.JSON.Format
         public float OverlapSize(Rectangle other)
         {
             var res = RectHelper.Intersect(new Windows.Foundation.Rect(this.TopX, this.TopY, this.Width, this.Height), new Windows.Foundation.Rect(other.TopX, other.TopY, other.Width, other.Height));
-            return (float)(res.Width * res.Height);
+            return res.IsEmpty ? 0 : (float)(res.Width * res.Height);
         }
     }
 }

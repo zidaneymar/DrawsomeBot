@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoteTaker", "NoteTaker.csproj", "{E9BA5926-241C-45FC-ABD8-4796F3982467}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrawsomeBotUwp", "DrawsomeBotUwp.csproj", "{E9BA5926-241C-45FC-ABD8-4796F3982467}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

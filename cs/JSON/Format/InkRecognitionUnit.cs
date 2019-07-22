@@ -41,25 +41,27 @@ namespace Contoso.NoteTaker.JSON.Format
                 return false;
             }
 
-            var rect = new Rect(this.BoundingRect.TopX, this.BoundingRect.TopY, this.BoundingRect.Width, this.BoundingRect.Height);
-            var p1 = new Point(other.BoundingRect.TopX, other.BoundingRect.TopY);
-            var p2 = new Point(other.BoundingRect.TopX + other.BoundingRect.Width, other.BoundingRect.TopY);
-            var p3 = new Point(other.BoundingRect.TopX + other.BoundingRect.Width, other.BoundingRect.TopY + other.BoundingRect.Height);
-            var p4 = new Point(other.BoundingRect.TopX, other.BoundingRect.TopY + other.BoundingRect.Height);
+            //var rect = new Rect(this.BoundingRect.TopX, this.BoundingRect.TopY, this.BoundingRect.Width, this.BoundingRect.Height);
+            //var p1 = new Point(other.BoundingRect.TopX, other.BoundingRect.TopY);
+            //var p2 = new Point(other.BoundingRect.TopX + other.BoundingRect.Width, other.BoundingRect.TopY);
+            //var p3 = new Point(other.BoundingRect.TopX + other.BoundingRect.Width, other.BoundingRect.TopY + other.BoundingRect.Height);
+            //var p4 = new Point(other.BoundingRect.TopX, other.BoundingRect.TopY + other.BoundingRect.Height);
 
-            var res = 0;
-            var pList = new List<Point>()
-            {
-                p1,p2,p3,p4
-            };
-            pList.ForEach(item =>
-            {
-                if (rect.Contains(item))
-                {
-                    res += 1;
-                }
-            });
-            return res >= 3;
+            //var res = 0;
+            //var pList = new List<Point>()
+            //{
+            //    p1,p2,p3,p4
+            //};
+            //pList.ForEach(item =>
+            //{
+            //    if (rect.Contains(item))
+            //    {
+            //        res += 1;
+            //    }
+            //});
+            //return res >= 3;
+
+            return this.BoundingRect.OverlapSize(other.BoundingRect) / (other.BoundingRect.Width * other.BoundingRect.Height) > 0.5;
         }
 
         // todo: fix the acurracy

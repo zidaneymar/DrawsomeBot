@@ -12,7 +12,7 @@ namespace Contoso.NoteTaker.Services.Ink
 {
     public class InkRecognizer
     {
-        List<InkRecognizerStroke> strokes;
+        public List<InkRecognizerStroke> strokes { get; set; }
         InkRecognitionRoot root = null;
 
         HttpManager httpManager;

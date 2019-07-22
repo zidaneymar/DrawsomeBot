@@ -11,7 +11,7 @@ namespace Contoso.NoteTaker.JSON.Format
     public class InkRecognizerStroke
     {
         [JsonIgnore]
-        private InkStroke inkStrokeInternal { get; set; }
+        public InkStroke inkStrokeInternal { get; set; }
 
         [JsonProperty(PropertyName = "id")]
         public UInt64 Id { get { return inkStrokeInternal.Id; } }
