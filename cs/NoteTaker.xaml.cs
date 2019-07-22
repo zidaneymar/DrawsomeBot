@@ -435,12 +435,17 @@ namespace NoteTaker
                     var newStep = Replace(stepToReplace);
                     result.Add(newStep);
                 }
-                if (steps[i].Type == "Microsoft.IfCondition")
+                else if (steps[i].Type == "Microsoft.IfCondition")
                 {
                     var ifStep = steps[i] as IfCondition;
                     var newIfStep = new IfCondition(ifStep.Condition, ifStep.RelatedShape);
-                    ifStep.Steps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.Steps, stepToFind));
-                    ifStep.ElseSteps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.ElseSteps, stepToFind));
+                    newIfStep.Steps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.Steps, stepToFind));
+                    newIfStep.ElseSteps.AddRange(FindInBotInstanceAndGenerateNew(ifStep.ElseSteps, stepToFind));
+                    result.Add(newIfStep);
+                }
+                else
+                {
+                    result.Add(steps[i]);
                 }
             }
             return result;

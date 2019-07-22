@@ -73,10 +73,10 @@
                 <Button Content="Generate" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100" Background="#FF93D700"/>
             </Border>
             <Border Grid.Row="2">
-                <ToggleSwitch Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
+                <ToggleSwitch IsOn="True" Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
             <Border Grid.Row="3">
-                <ToggleSwitch Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
+                <ToggleSwitch IsOn="True" Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
             <Border Grid.Row="4">
                 <ToggleSwitch Header="Edit Mode" OffContent="Off" OnContent="On" Toggled="Edit_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
