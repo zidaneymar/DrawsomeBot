@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Popups;
 using System.Linq;
 using Windows.UI;
+using System.Net.Http;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -80,24 +81,8 @@ namespace NoteTaker
             DpiX = displayInfo.RawDpiX;
             DpiY = displayInfo.RawDpiY;
 
-            debugCanvas.Visibility = Visibility.Collapsed;
-            recogCanvas.Visibility = Visibility.Collapsed;
-        }
-
-        private async void InkCanvas_PointerReleased(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}", e.GetCurrentPoint(inkCanvas).Position.X, e.GetCurrentPoint(inkCanvas).Position.Y));
-            await messageBox.ShowAsync();
-        }
-
-        private Flyout GetStepSettings()
-        {
-            var fly = this.Resources["myFlyout"] as Flyout;
-
-            
-
-
-            return fly;
+            debugCanvas.Visibility = ShapeButton.IsOn ? Visibility.Visible : Visibility.Collapsed;
+            recogCanvas.Visibility = LineButton.IsOn ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public static Visibility GetVisibilityForActivity(object type)
@@ -154,6 +139,33 @@ namespace NoteTaker
             return type.ToString() == "Microsoft." + nameof(SetProperty) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        private void SetForm()
+        {
+            switch (curEditingStep.Type)
+            {
+                case "Microsoft.SendActivity":
+                    this.activity.Text = (curEditingStep as SendActivity)?.Activity ?? string.Empty;
+                    break;
+                case "Microsoft.IfCondition":
+                    this.condition.Text = (curEditingStep as IfCondition)?.Condition ?? string.Empty;
+                    break;
+                case "Microsoft.SetProperty":
+                    this.property.Text = (curEditingStep as SetProperty)?.Property ?? string.Empty;
+                    this.value.Text = (curEditingStep as SetProperty)?.Value ?? string.Empty;
+                    break;
+                case "Microsoft.HttpRequest":
+                    this.url.Text = (curEditingStep as HttpRequest)?.Url ?? string.Empty;
+                    this.method.Text = (curEditingStep as HttpRequest)?.Method ?? string.Empty;
+                    this.body.Text = (curEditingStep as HttpRequest)?.Body ?? string.Empty;
+                    break;
+                case "Microsoft.TextInput":
+                    this.prompt.Text = (curEditingStep as TextInput)?.Prompt ?? string.Empty;
+                    this.property.Text = (curEditingStep as TextInput)?.Property ?? string.Empty;
+                    break;
+
+            }
+        }
+
         private async void InkCanvas_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
         {
             var inchToMillimeterFactor = 25.4f;
@@ -165,12 +177,12 @@ namespace NoteTaker
             var step = GetRelatedStep((float)xCord, (float)yCord);
             if (step != null)
             {
-                //var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}\nStep Type:{2}", e.GetPosition(inkCanvas).X, e.GetPosition(inkCanvas).Y, step.Type));
-                //await messageBox.ShowAsync();
                 curEditingStep = step;
                 var fly = this.myFlyout;
-                this.Type.SelectedIndex = TypeToIndex[curEditingStep.Type];
 
+                SetForm();
+                
+                this.Type.SelectedIndex = TypeToIndex[curEditingStep.Type];
                 var options = new Windows.UI.Xaml.Controls.Primitives.FlyoutShowOptions()
                 {
                     Position = e.GetPosition(sender as UIElement)
@@ -242,6 +254,22 @@ namespace NoteTaker
             return text;
         }
 
+        private ComposerStep FindStepInBotInstance(List<ComposerStep> steps, Contoso.NoteTaker.JSON.Format.Rectangle rect)
+        {
+            foreach (var step in steps)
+            {
+                if (step.RelatedShape.RecogUnit.BoundingRect.OverlapSize(rect) > 10)
+                {
+                    return step;
+                }
+                else if (step is IfCondition)
+                {
+                    return FindStepInBotInstance((step as IfCondition).Steps, rect) ?? FindStepInBotInstance((step as IfCondition).ElseSteps, rect);
+                }
+            }
+            return null;
+        }
+
         private ComposerStep GetRelatedStep(float x, float y, float size = 10)
         {
             var rect = new Contoso.NoteTaker.JSON.Format.Rectangle();
@@ -249,8 +277,7 @@ namespace NoteTaker
             rect.TopY = y - size / 2;
             rect.Width = size;
             rect.Height = size;
-            return this.botInstance.AllSteps.OrderByDescending(step => step.RelatedShape.RecogUnit.BoundingRect.OverlapSize(rect))?
-                .Where(step => step.RelatedShape.RecogUnit.BoundingRect.OverlapSize(rect) > 0)?.FirstOrDefault();
+            return FindStepInBotInstance(botInstance.Steps, rect);
         }
 
 
@@ -279,32 +306,6 @@ namespace NoteTaker
 
             return polygon;
         }
-
-        //private void DrawingDebugInfoForShape(DrawsomeShape shape)
-        //{
-        //    debugCanvas.Children.Add(GetPolygon(shape.BoundingRect, Windows.UI.ColorHelper.FromArgb(255, 0, 0, 255)));
-
-        //    if (shape.Next != null)
-        //    {
-        //        DrawingDebugInfoForLine(shape.Next);
-        //    }
-
-        //    if (shape.NextFalse != null)
-        //    {
-        //        DrawingDebugInfoForLine(shape.NextFalse);
-        //    }
-
-        //}
-
-        //private void DrawingDebugInfoForLine(DrawsomeLine shape)
-        //{
-        //    debugCanvas.Children.Add(GetPolygon(shape.BoundingRect, ColorHelper.FromArgb(255, 255, 0, 0)));
-            
-        //    if (shape.Next != null)
-        //    {
-        //        DrawingDebugInfoForShape(shape.Next);
-        //    }
-        //}
 
         private void DrawAllRecognzied(InkRecognitionRoot root)
         {
@@ -491,16 +492,25 @@ namespace NoteTaker
             {
                 var composerBot = this.botInstance;
                 var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
-                FileSavePicker picker = new FileSavePicker();
-                picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                picker.SuggestedFileName = "Main.dialog";
-                StorageFile file = await picker.PickSaveFileAsync();
-
-                if (file != null)
+                using (HttpClient client = new HttpClient())
                 {
-                    await FileIO.WriteTextAsync(file, composerJson);
+                    var content = new StringContent(composerJson, System.Text.Encoding.UTF8, "application/json");
+                    var result = await client.PostAsync("http://localhost:5000/api/hack/drawsome", content);
+                    string resultContent = await result.Content.ReadAsStringAsync();
+
+                    var messageDialog = new MessageDialog(resultContent);
+                    await messageDialog.ShowAsync();
                 }
+                //FileSavePicker picker = new FileSavePicker();
+                //picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
+                //picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                //picker.SuggestedFileName = "Main.dialog";
+                //StorageFile file = await picker.PickSaveFileAsync();
+
+                //if (file != null)
+                //{
+                //    await FileIO.WriteTextAsync(file, composerJson);
+                //}
             }
             catch (Exception ex)
             {
