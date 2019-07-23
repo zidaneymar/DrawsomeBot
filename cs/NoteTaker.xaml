@@ -69,7 +69,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Border Grid.Row="0">
-                <Button Width="70" PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="aButton" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Button Width="70" x:Name="aButton" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
                     <StackPanel>
                         <SymbolIcon Symbol="Scan"/>
                         <TextBlock>Analyze</TextBlock>
@@ -85,7 +85,7 @@
                 </Button>
             </Border>
             <Border Grid.Row="1">
-                <Button Width="70" PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="saveButton" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Button Width="70" x:Name="saveButton" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
                     <StackPanel>
                         <SymbolIcon Symbol="Save"/>
                         <TextBlock>Save</TextBlock>
@@ -93,7 +93,7 @@
                 </Button>
             </Border>
             <Border Grid.Row="2">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="loadButton" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
+                <Button x:Name="loadButton" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
                     <StackPanel>
                         <SymbolIcon Symbol="Upload"/>
                         <TextBlock>Load</TextBlock>
@@ -101,7 +101,7 @@
                 </Button>
             </Border>
             <Border Grid.Row="3">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="gButton" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
+                <Button x:Name="gButton" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
                     <StackPanel>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE99A;"/>
                         <TextBlock>Bot</TextBlock>
