@@ -69,19 +69,44 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Border Grid.Row="0">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="aButton" Content="Analyze" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+                <Button Width="70" PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="aButton" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <StackPanel>
+                        <SymbolIcon Symbol="Scan"/>
+                        <TextBlock>Analyze</TextBlock>
+                    </StackPanel>
+                </Button>
             </Border>
             <Border Grid.Row="0">
-                <Button x:Name="clearButton" Content="Clear" Click="ClearButton_Click" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="100" Style="{StaticResource TextBlockButtonStyle}"/>
+                <Button Width="70" x:Name="clearButton" Click="ClearButton_Click" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}">
+                    <StackPanel>
+                        <SymbolIcon Symbol="Clear"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
             </Border>
             <Border Grid.Row="1">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="saveButton" Content="Save" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+                <Button Width="70" PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="saveButton" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <StackPanel>
+                        <SymbolIcon Symbol="Save"/>
+                        <TextBlock>Save</TextBlock>
+                    </StackPanel>
+                </Button>
             </Border>
             <Border Grid.Row="2">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="loadButton" Content="Load" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="loadButton" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
+                    <StackPanel>
+                        <SymbolIcon Symbol="Upload"/>
+                        <TextBlock>Load</TextBlock>
+                    </StackPanel>
+                </Button>
             </Border>
             <Border Grid.Row="3">
-                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="gButton" Content="Generate" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="gButton" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Width="70">
+                    <StackPanel>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE99A;"/>
+                        <TextBlock>Bot</TextBlock>
+                    </StackPanel>
+                </Button>
             </Border>
             <Border Grid.Row="4">
                 <ToggleSwitch x:Name="ShapeButton" IsOn="True" Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
