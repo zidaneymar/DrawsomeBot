@@ -342,7 +342,7 @@ namespace NoteTaker
             Canvas.SetTop(text, shape.RecogUnit.BoundingRect.TopY * scalingY);
             Canvas.SetLeft(text, shape.RecogUnit.BoundingRect.TopX * scalingX);
 
-            text.Text = string.Format("({0},{1})", shape.RecogUnit.BoundingRect.TopX, shape.RecogUnit.BoundingRect.TopY);
+            text.Text = string.Format("({0},{1},{2})", shape.RecogUnit.BoundingRect.TopX, shape.RecogUnit.BoundingRect.TopY, shape.Text);
             text.FontSize = 20;
 
             return text;
