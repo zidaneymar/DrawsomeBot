@@ -13,6 +13,9 @@ namespace Contoso.NoteTaker.Services.Ink
     public class InkRecognizer
     {
         public List<InkRecognizerStroke> strokes { get; set; }
+
+        public List<InkStroke> innerStorkes { get; set; }
+
         InkRecognitionRoot root = null;
 
         HttpManager httpManager;
@@ -25,23 +28,29 @@ namespace Contoso.NoteTaker.Services.Ink
         {
             httpManager = new HttpManager(appKey, baseAddress, destinationUrl);
             strokes = new List<InkRecognizerStroke>();
+            innerStorkes = new List<InkStroke>();
         }
 
         public void AddStroke(InkStroke stroke)
         {
             var irStroke = new InkRecognizerStroke(stroke, dpiX, dpiY);
             strokes.Add(irStroke);
+            innerStorkes.Add(stroke);
         }
 
         public void RemoveStroke(UInt64 strokeId)
         {
             var strokeToRemove = strokes.Find(stroke => stroke.Id == strokeId);
             strokes.Remove(strokeToRemove);
+
+            var innerStrokeToRemove = innerStorkes.Find(stroke => stroke.Id == strokeId);
+            innerStorkes.Remove(innerStrokeToRemove);
         }
 
         public void ClearStrokes()
         {
             strokes.Clear();
+            innerStorkes.Clear();
             root = null;
         }
 

@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
-        <Flyout x:Name="myFlyout" Closed="MyFlyout_Closed">
+        <Flyout x:Name="myFlyout" Closing="MyFlyout_Closed">
             <StackPanel>
                 <TextBlock Text="Step Settings" Style="{StaticResource TitleTextBlockStyle}"></TextBlock>
                 <ComboBox Header ="Step Type" x:Name="Type" Margin="10,10,0,0" PlaceholderText="" Width="Auto" SelectionChanged="Type_SelectionChanged">
@@ -64,21 +64,32 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Border Grid.Row="0">
-                <Button Content="Analyze" Click="SubscribeButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Row="0" Grid.Column="0">
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="aButton" Content="Analyze" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="1">
-                <Button Content="Generate" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100" Background="#FF93D700"/>
+            <Border Grid.Row="1" Grid.Column="0">
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="saveButton" Content="Save" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="2">
+            <Border Grid.Row="2" Grid.Column="0">
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="loadButton" Content="Load" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+            </Border>
+            <Border Grid.Row="3" Grid.Column="0">
+                <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="gButton" Content="Generate" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
+            </Border>
+            <Border Grid.Row="4" Grid.Column="0">
                 <ToggleSwitch x:Name="ShapeButton" IsOn="True" Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
-            <Border Grid.Row="3">
+            <Border Grid.Row="5" Grid.Column="0">
                 <ToggleSwitch x:Name="LineButton" IsOn="True" Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
-            <Border Grid.Row="4">
+            <Border Grid.Row="6" Grid.Column="0">
                 <ToggleSwitch Header="Edit Mode" OffContent="Off" OnContent="On" Toggled="Edit_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
         </Grid>

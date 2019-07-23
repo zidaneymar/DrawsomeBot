@@ -21,6 +21,10 @@ using Windows.UI.Popups;
 using System.Linq;
 using Windows.UI;
 using System.Net.Http;
+using Windows.UI.Composition;
+using System.Numerics;
+using Windows.UI.Input.Inking;
+using Windows.Storage.Streams;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -31,7 +35,7 @@ namespace NoteTaker
     /// </summary>
     public sealed partial class NoteTaker : Page
     {
-        InkRecognizer inkRecognizer;
+        Contoso.NoteTaker.Services.Ink.InkRecognizer inkRecognizer;
         DisplayInformation displayInfo;
 
         private readonly float DpiX;
@@ -43,17 +47,42 @@ namespace NoteTaker
 
         private readonly Dictionary<string, int> TypeToIndex = new Dictionary<string, int>()
         {
-            //<x:String>Microsoft.SendActivity</x:String>
-            //        <x:String>Microsoft.IfCondition</x:String>
-            //        <x:String>Microsoft.HttpRequest</x:String>
-            //        <x:String>Microsoft.TextInput</x:String>
-            //        <x:String>Microsfot.SetProperty</x:String>
             { "Microsoft.SendActivity", 0 },
             { "Microsoft.IfCondition", 1 },
             { "Microsoft.HttpRequest", 2 },
             { "Microsoft.TextInput", 3 },
             { "Microsoft.SetProperty", 4 },
         };
+
+        Compositor _compositor = Window.Current.Compositor;
+        SpringVector3NaturalMotionAnimation _springAnimation;
+
+        private void CreateOrUpdateSpringAnimation(float finalValue)
+        {
+            if (_springAnimation == null)
+            {
+                _springAnimation = _compositor.CreateSpringVector3Animation();
+                _springAnimation.Target = "Scale";
+            }
+
+            _springAnimation.FinalValue = new Vector3(finalValue);
+        }
+
+        private void PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // Scale up to 1.5
+            CreateOrUpdateSpringAnimation(1.3f);
+
+            (sender as UIElement).StartAnimation(_springAnimation);
+        }
+
+        private void PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // Scale back down to 1.0
+            CreateOrUpdateSpringAnimation(1.0f);
+
+            (sender as UIElement).StartAnimation(_springAnimation);
+        }
 
         public NoteTaker()
         {
@@ -73,7 +102,7 @@ namespace NoteTaker
             inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkPresenter.StrokesErased += InkPresenter_StrokesErased;
 
-            inkRecognizer = new InkRecognizer(subscriptionKey, endpoint, inkRecognitionUrl);
+            inkRecognizer = new Contoso.NoteTaker.Services.Ink.InkRecognizer(subscriptionKey, endpoint, inkRecognitionUrl);
 
             displayInfo = DisplayInformation.GetForCurrentView();
             inkRecognizer.SetDisplayInformation(displayInfo);
@@ -84,6 +113,8 @@ namespace NoteTaker
             debugCanvas.Visibility = ShapeButton.IsOn ? Visibility.Visible : Visibility.Collapsed;
             recogCanvas.Visibility = LineButton.IsOn ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        #region Visibility
 
         public static Visibility GetVisibilityForActivity(object type)
         {
@@ -139,6 +170,8 @@ namespace NoteTaker
             return type.ToString() == "Microsoft." + nameof(SetProperty) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        #endregion
+
         private void SetForm()
         {
             switch (curEditingStep.Type)
@@ -193,9 +226,7 @@ namespace NoteTaker
             }
             else
             {
-                curEditingStep = null;
-                var messageBox = new MessageDialog(string.Format("The location is x{0} y{1}, step is null", e.GetPosition(inkCanvas).X, e.GetPosition(inkCanvas).Y));
-                await messageBox.ShowAsync();
+                // should say something?
             }
         }
 
@@ -349,7 +380,7 @@ namespace NoteTaker
             }
         }
 
-        private async void SubscribeButton_Click(object sender, RoutedEventArgs e)
+        private async void Analyze_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -366,24 +397,10 @@ namespace NoteTaker
                         if (pic.Root != null)
                         {
                             DrawRect(pic);
-                            //DrawingDebugInfoForShape(pic.Root);
-                            //DrawAllRecognzied(root);
                             DrawStorkes(pic);
-                            //output.Text = pic.ToString();
                             var composerBot = await BotGenerator.Parse(pic);
                             this.botInstance = composerBot;
-
-                            //var composerJson = JsonConvert.SerializeObject(composerBot, Formatting.Indented);
-                            //FileSavePicker picker = new FileSavePicker();
-                            //picker.FileTypeChoices.Add("file style", new string[] { ".txt", ".dialog" });
-                            //picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-                            //picker.SuggestedFileName = "Main.dialog";
-                            //StorageFile file = await picker.PickSaveFileAsync();
-
-                            //if (file != null)
-                            //{
-                            //    await FileIO.WriteTextAsync(file, composerJson);
-                            //}
+                            this.gButton.Visibility = Visibility.Visible;
                         }
                     }
                 }
@@ -486,7 +503,7 @@ namespace NoteTaker
 
         }
 
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        private async void Generate_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -517,6 +534,119 @@ namespace NoteTaker
                 var messageDialog = new MessageDialog(ex.Message);
                 await messageDialog.ShowAsync();
             }
+        }
+
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                IReadOnlyList<InkStroke> currentStrokes = inkCanvas.InkPresenter.StrokeContainer.GetStrokes();
+                if (currentStrokes.Count > 0)
+                {
+                    FileSavePicker savePicker = new FileSavePicker();
+                    savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                    savePicker.FileTypeChoices.Add(
+                        "GIF with embedded ISF",
+                        new List<string>() { ".gif" });
+                    savePicker.DefaultFileExtension = ".gif";
+                    savePicker.SuggestedFileName = "InkSample";
+
+                    StorageFile file = await savePicker.PickSaveFileAsync();
+                    if (file != null)
+                    {
+                        Windows.Storage.CachedFileManager.DeferUpdates(file);
+                        IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite);
+                        using (IOutputStream outputStream = stream.GetOutputStreamAt(0))
+                        {
+                            await inkCanvas.InkPresenter.StrokeContainer.SaveAsync(outputStream);
+                            await outputStream.FlushAsync();
+                        }
+                        stream.Dispose();
+
+                        Windows.Storage.Provider.FileUpdateStatus status = await CachedFileManager.CompleteUpdatesAsync(file);
+
+                        if (status == Windows.Storage.Provider.FileUpdateStatus.Complete)
+                        {
+                            var messageDialog = new MessageDialog("Save Success!");
+                            await messageDialog.ShowAsync();
+                        }
+                        else
+                        {
+                            var messageDialog = new MessageDialog("Save Failed");
+                            await messageDialog.ShowAsync();
+                        }
+                    }
+                    else
+                    {
+                        var messageDialog = new MessageDialog("No strokes to save.");
+                        await messageDialog.ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var messageDialog = new MessageDialog(ex.Message);
+                await messageDialog.ShowAsync();
+            }
+        }
+
+        private void ClearCanvas()
+        {
+            this.recogCanvas.Children.Clear();
+            this.debugCanvas.Children.Clear();
+            this.inkRecognizer.ClearStrokes();
+            this.inkCanvas.InkPresenter.StrokeContainer.Clear();
+            this.botInstance = null;
+            this.curEditingStep = null;
+            this.gButton.Visibility = Visibility.Collapsed;
+        }
+
+        private async void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ClearCanvas();
+                FileOpenPicker openPicker = new FileOpenPicker();
+                openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                openPicker.FileTypeFilter.Add(".gif");
+
+                StorageFile file = await openPicker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    Windows.Storage.CachedFileManager.DeferUpdates(file);
+                    IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite);
+                    using (IInputStream intputStream = stream.GetInputStreamAt(0))
+                    {
+                        await inkCanvas.InkPresenter.StrokeContainer.LoadAsync(intputStream);
+                    }
+                    stream.Dispose();
+
+                    Windows.Storage.Provider.FileUpdateStatus status = await CachedFileManager.CompleteUpdatesAsync(file);
+
+                    if (status == Windows.Storage.Provider.FileUpdateStatus.Complete)
+                    {
+                        foreach (var stroke in inkCanvas.InkPresenter.StrokeContainer.GetStrokes())
+                        {
+                            this.inkRecognizer.AddStroke(stroke);
+                        }
+
+                        var messageDialog = new MessageDialog("Load Success!");
+                        await messageDialog.ShowAsync();
+                    }
+                    else
+                    {
+                        var messageDialog = new MessageDialog("Load Failed");
+                        await messageDialog.ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var messageDialog = new MessageDialog(ex.Message);
+                await messageDialog.ShowAsync();
+            }
+
+
         }
     }
 }
