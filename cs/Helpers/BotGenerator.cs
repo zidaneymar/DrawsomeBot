@@ -17,7 +17,7 @@ namespace NoteTaker.Helpers
 
             var allSteps = new List<ComposerStep>();
 
-            var rootSteps = await BuildFromStepUntil(pic, root, null, allSteps);
+            var rootSteps = await BuildFromStepUntil(pic, root, null, allSteps, new HashSet<DrawsomeObj>());
             var bot = new ComposerBot(rootSteps);
             bot.AllSteps = allSteps;
             return bot;
@@ -59,7 +59,7 @@ namespace NoteTaker.Helpers
         }
 
         // return a list of step from cur root
-        public static async Task<List<ComposerStep>> BuildFromStepUntil(DrawsomePic pic, DrawsomeObj root, DrawsomeObj target, List<ComposerStep> allSteps)
+        public static async Task<List<ComposerStep>> BuildFromStepUntil(DrawsomePic pic, DrawsomeObj root, DrawsomeObj target, List<ComposerStep> allSteps, HashSet<DrawsomeObj> visited)
         {
             var steps = new List<ComposerStep>();
             
@@ -67,6 +67,13 @@ namespace NoteTaker.Helpers
             {
                 return steps;
             }
+
+            if (visited.Contains(root))
+            {
+                return steps;
+            }
+
+            visited.Add(root);
 
             // only one next
             if (root.Next.Count != 2)
@@ -76,11 +83,11 @@ namespace NoteTaker.Helpers
                     var step = await BuildComposerStepFromShape(root as DrawsomeShape);
                     steps.Add(step);
                     allSteps.Add(step);
-                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps));
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps, visited));
                 }
                 else if (root is DrawsomeLine)
                 {
-                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps));
+                    steps.AddRange(await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), target, allSteps, visited));
                 }
             }
 
@@ -91,10 +98,10 @@ namespace NoteTaker.Helpers
                     var firstCommon = NearestObj(pic, root);
                     var step = new IfCondition((root as DrawsomeShape).Text, root as DrawsomeShape);
                     allSteps.Add(step);
-                    step.Steps = await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), firstCommon, allSteps);
-                    step.ElseSteps = await BuildFromStepUntil(pic, root.Next.LastOrDefault(), firstCommon, allSteps);
+                    step.Steps = await BuildFromStepUntil(pic, root.Next.FirstOrDefault(), firstCommon, allSteps, visited);
+                    step.ElseSteps = await BuildFromStepUntil(pic, root.Next.LastOrDefault(), firstCommon, allSteps, visited);
                     steps.Add(step);
-                    steps.AddRange(await BuildFromStepUntil(pic, firstCommon, target, allSteps));
+                    steps.AddRange(await BuildFromStepUntil(pic, firstCommon, target, allSteps, visited));
                 }
             }
 
@@ -110,7 +117,15 @@ namespace NoteTaker.Helpers
 
             while (trueRoot != null)
             {
-                trueList.Add(trueRoot);
+                if (trueList.Find(item => item == trueRoot) == null)
+                {
+                    trueList.Add(trueRoot);
+                }
+                else
+                {
+                    break;
+                }
+
                 trueRoot = trueRoot.Next.FirstOrDefault();
             }
             var falseList = new List<DrawsomeObj>();
@@ -119,7 +134,15 @@ namespace NoteTaker.Helpers
 
             while (falseRoot != null)
             {
-                falseList.Add(falseRoot);
+                if (falseList.Find(item => item == falseRoot) == null)
+                {
+                    falseList.Add(falseRoot);
+                }
+                else
+                {
+                    break;
+                }
+
                 falseRoot = falseRoot.Next.FirstOrDefault();
             }
 

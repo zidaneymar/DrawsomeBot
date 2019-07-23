@@ -20,6 +20,9 @@ namespace NoteTaker.Model
         [JsonProperty(PropertyName = "$schema")]
         public string Schema = "../../app.schema";
 
+        [JsonProperty(PropertyName = "generator")]
+        public string Generator = "common.lg";
+
         [JsonIgnore]
         public List<ComposerStep> AllSteps = new List<ComposerStep>();
 

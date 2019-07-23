@@ -12,13 +12,5 @@ namespace NoteTaker.Helpers
 {
     public static class GraphHelper
     {
-        //public static Polygon GetRectFromPoint(Point p, float size = 1.0f)
-        //{
-            
-        //}
-        public static Visibility GetVisibilityForActivity(string type)
-        {
-            return type == nameof(SendActivity) ? Visibility.Visible : Visibility.Collapsed;
-        }
     }
 }

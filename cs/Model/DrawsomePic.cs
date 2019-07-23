@@ -51,7 +51,9 @@ namespace NoteTaker.Model
                 this.AllUnits.Add(unitToAdd);
             }
 
-            var inkLines = root.GetUnits().Where(item => (item as InkDrawing)?.RecognizedShape == DrawingShapeKind.Drawing);
+            var inkLines = root.GetUnits().Where(item => (item as InkDrawing)?.RecognizedShape == DrawingShapeKind.Drawing).Where(item => item.BoundingRect.Width + item.BoundingRect.Height > 20);
+
+           
 
             foreach (var line in inkLines)
             {
