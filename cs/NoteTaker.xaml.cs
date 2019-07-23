@@ -157,6 +157,8 @@ namespace NoteTaker
                     this.url.Text = (curEditingStep as HttpRequest)?.Url ?? string.Empty;
                     this.method.Text = (curEditingStep as HttpRequest)?.Method ?? string.Empty;
                     this.body.Text = (curEditingStep as HttpRequest)?.Body ?? string.Empty;
+                    this.property.Text = (curEditingStep as HttpRequest)?.Property ?? string.Empty;
+
                     break;
                 case "Microsoft.TextInput":
                     this.prompt.Text = (curEditingStep as TextInput)?.Prompt ?? string.Empty;
@@ -280,7 +282,6 @@ namespace NoteTaker
             return FindStepInBotInstance(botInstance.Steps, rect);
         }
 
-
         private Polygon GetPolygon(Contoso.NoteTaker.JSON.Format.Rectangle obj, Color color)
         {
             var inchToMillimeterFactor = 25.4f;
@@ -315,7 +316,6 @@ namespace NoteTaker
                 recogCanvas.Children.Add(GetPolygon(unit.BoundingRect, ColorHelper.FromArgb(255,0,255,0)));
             }
         }
-
 
         private void Debug_Clicked(object sender, RoutedEventArgs e)
         {
