@@ -117,6 +117,16 @@
             <Border Grid.Row="6">
                 <ToggleSwitch Header="Edit Mode" OffContent="Off" OnContent="On" Toggled="Edit_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
+            <Border Grid.Row="7">
+                <StackPanel Margin="10">
+                    <TextBlock>
+                        Hookup
+                    </TextBlock>
+                    <Slider x:Name="hook" Width="100" Minimum="10" Maximum="100" StepFrequency="5"
+                        VerticalAlignment="Bottom" HorizontalAlignment="Left" SmallChange="10" LargeChange="100" Value="50" />
+                </StackPanel>
+                
+            </Border>
         </Grid>
     </Grid>
 </Page>

@@ -21,8 +21,11 @@ namespace NoteTaker.Model
 
         public List<DrawsomeLine> AllLines { get; set; } = new List<DrawsomeLine>();
 
-        public DrawsomePic(InkRecognitionRoot root, List<InkRecognizerStroke> inkStrokes)
+        public int HookUpDistance { get; set; }
+
+        public DrawsomePic(InkRecognitionRoot root, List<InkRecognizerStroke> inkStrokes, int hookUpDistance)
         {
+            this.HookUpDistance = hookUpDistance;
             this.InkRoot = root;
             if (root.GetShapes().Count() == 0)
             {
@@ -57,7 +60,7 @@ namespace NoteTaker.Model
 
             foreach (var line in inkLines)
             {
-                this.AllLines.Add(new DrawsomeLine(line, inkStrokes, 5));
+                this.AllLines.Add(new DrawsomeLine(line, inkStrokes, 5, HookUpDistance));
             }
 
             // we iterate each shape to detect the next and previous line

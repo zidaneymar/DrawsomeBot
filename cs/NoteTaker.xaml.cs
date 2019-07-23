@@ -54,35 +54,35 @@ namespace NoteTaker
             { "Microsoft.SetProperty", 4 },
         };
 
-        Compositor _compositor = Window.Current.Compositor;
-        SpringVector3NaturalMotionAnimation _springAnimation;
+        //Compositor _compositor = Window.Current.Compositor;
+        //SpringVector3NaturalMotionAnimation _springAnimation;
 
-        private void CreateOrUpdateSpringAnimation(float finalValue)
-        {
-            if (_springAnimation == null)
-            {
-                _springAnimation = _compositor.CreateSpringVector3Animation();
-                _springAnimation.Target = "Scale";
-            }
+        //private void CreateOrUpdateSpringAnimation(float finalValue)
+        //{
+        //    if (_springAnimation == null)
+        //    {
+        //        _springAnimation = _compositor.CreateSpringVector3Animation();
+        //        _springAnimation.Target = "Scale";
+        //    }
 
-            _springAnimation.FinalValue = new Vector3(finalValue);
-        }
+        //    _springAnimation.FinalValue = new Vector3(finalValue);
+        //}
 
-        private void PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Scale up to 1.5
-            CreateOrUpdateSpringAnimation(1.3f);
+        //private void PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        //{
+        //    // Scale up to 1.5
+        //    CreateOrUpdateSpringAnimation(1.3f);
 
-            (sender as UIElement).StartAnimation(_springAnimation);
-        }
+        //    (sender as UIElement).StartAnimation(_springAnimation);
+        //}
 
-        private void PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Scale back down to 1.0
-            CreateOrUpdateSpringAnimation(1.0f);
+        //private void PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        //{
+        //    // Scale back down to 1.0
+        //    CreateOrUpdateSpringAnimation(1.0f);
 
-            (sender as UIElement).StartAnimation(_springAnimation);
-        }
+        //    (sender as UIElement).StartAnimation(_springAnimation);
+        //}
 
         public NoteTaker()
         {
@@ -98,6 +98,8 @@ namespace NoteTaker
             var inkPresenter = inkCanvas.InkPresenter;
             inkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Mouse;
 
+            inkCanvas.Tapped += InkCanvas_Tapped;
+            inkCanvas.DoubleTapped += InkCanvas_DoubleTapped;
             inkCanvas.RightTapped += InkCanvas_RightTapped;
             inkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
             inkPresenter.StrokesErased += InkPresenter_StrokesErased;
@@ -198,6 +200,65 @@ namespace NoteTaker
                     this.property.Text = (curEditingStep as TextInput)?.Property ?? string.Empty;
                     break;
 
+            }
+        }
+
+        private async void InkCanvas_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+            var xCord = e.GetPosition(inkCanvas).X / scalingX;
+            var yCord = e.GetPosition(inkCanvas).Y / scalingY;
+            var step = GetRelatedStep((float)xCord, (float)yCord);
+            if (step != null)
+            {
+                curEditingStep = step;
+                var fly = this.myFlyout;
+
+                SetForm();
+
+                this.Type.SelectedIndex = TypeToIndex[curEditingStep.Type];
+                var options = new Windows.UI.Xaml.Controls.Primitives.FlyoutShowOptions()
+                {
+                    Position = e.GetPosition(sender as UIElement)
+                };
+                fly.ShowAt(sender as FrameworkElement, options);
+            }
+            else
+            {
+                // should say something?
+            }
+        }
+
+
+        private async void InkCanvas_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            var inchToMillimeterFactor = 25.4f;
+            List<Point> points = new List<Point>();
+            var scalingX = DpiX / inchToMillimeterFactor;
+            var scalingY = DpiY / inchToMillimeterFactor;
+            var xCord = e.GetPosition(inkCanvas).X / scalingX;
+            var yCord = e.GetPosition(inkCanvas).Y / scalingY;
+            var step = GetRelatedStep((float)xCord, (float)yCord);
+            if (step != null)
+            {
+                curEditingStep = step;
+                var fly = this.myFlyout;
+
+                SetForm();
+
+                this.Type.SelectedIndex = TypeToIndex[curEditingStep.Type];
+                var options = new Windows.UI.Xaml.Controls.Primitives.FlyoutShowOptions()
+                {
+                    Position = e.GetPosition(sender as UIElement)
+                };
+                fly.ShowAt(sender as FrameworkElement, options);
+            }
+            else
+            {
+                // should say something?
             }
         }
 
@@ -310,7 +371,11 @@ namespace NoteTaker
             rect.TopY = y - size / 2;
             rect.Width = size;
             rect.Height = size;
-            return FindStepInBotInstance(botInstance.Steps, rect);
+            if (botInstance != null)
+            {
+                return FindStepInBotInstance(botInstance.Steps, rect);
+            }
+            return null;
         }
 
         private Polygon GetPolygon(Contoso.NoteTaker.JSON.Format.Rectangle obj, Color color)
@@ -392,7 +457,7 @@ namespace NoteTaker
                     var root = inkRecognizer.GetRecognizerRoot();
                     if (root != null)
                     {
-                        var pic = new DrawsomePic(root, inkRecognizer.strokes);
+                        var pic = new DrawsomePic(root, inkRecognizer.strokes, (int)hook.Value);
 
                         if (pic.Root != null)
                         {

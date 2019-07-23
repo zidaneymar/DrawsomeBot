@@ -23,7 +23,7 @@ namespace NoteTaker.Model
             return res;
         }
 
-        public DrawsomeLine(InkRecognitionUnit unit, List<InkRecognizerStroke> inkStrokes, int skip = 10): base(unit)
+        public DrawsomeLine(InkRecognitionUnit unit, List<InkRecognizerStroke> inkStrokes, int skip = 10, int size = 10): base(unit)
         {
             var mainStrokeId = unit.StrokeIds.OrderByDescending(id => CalPointDistance(inkStrokes.Find(item => item.Id == id))).First();
             var mainStroke = inkStrokes.Find(item => item.Id == mainStrokeId);
@@ -36,7 +36,7 @@ namespace NoteTaker.Model
                 if (cur % skip == 0)
                 {
                     // use skip as size
-                    this.LittleRects.Add(GetRectangle(p, skip));
+                    this.LittleRects.Add(GetRectangle(p, size));
                 }
                 cur++;
             }
