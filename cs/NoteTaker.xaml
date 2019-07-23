@@ -68,28 +68,28 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Border Grid.Row="0" Grid.Column="0">
+            <Border Grid.Row="0">
                 <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="aButton" Content="Analyze" Click="Analyze_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="1" Grid.Column="0">
+            <Border Grid.Row="0">
+                <Button x:Name="clearButton" Content="Clear" Click="ClearButton_Click" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="100" Style="{StaticResource TextBlockButtonStyle}"/>
+            </Border>
+            <Border Grid.Row="1">
                 <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="saveButton" Content="Save" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="2" Grid.Column="0">
+            <Border Grid.Row="2">
                 <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="loadButton" Content="Load" Click="LoadButton_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="3" Grid.Column="0">
+            <Border Grid.Row="3">
                 <Button PointerEntered="PointerEntered" PointerExited="PointerExited" x:Name="gButton" Content="Generate" Visibility="Collapsed" Click="Generate_Click" Style="{StaticResource AccentButtonStyle}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="100"/>
             </Border>
-            <Border Grid.Row="4" Grid.Column="0">
+            <Border Grid.Row="4">
                 <ToggleSwitch x:Name="ShapeButton" IsOn="True" Header="Show Shapes" OffContent="Off" OnContent="On" Toggled="Debug_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
-            <Border Grid.Row="5" Grid.Column="0">
+            <Border Grid.Row="5">
                 <ToggleSwitch x:Name="LineButton" IsOn="True" Header="Show Lines" OffContent="Off" OnContent="On" Toggled="ShowAllRecognized_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
-            <Border Grid.Row="6" Grid.Column="0">
+            <Border Grid.Row="6">
                 <ToggleSwitch Header="Edit Mode" OffContent="Off" OnContent="On" Toggled="Edit_Clicked" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10"></ToggleSwitch>
             </Border>
         </Grid>

@@ -113,12 +113,13 @@ namespace NoteTaker.Model
             }
         }
 
-        public HttpRequest(string url, string method, string body, DrawsomeShape shape) : base(shape)
+        public HttpRequest(string url, string method, string body, string property, DrawsomeShape shape) : base(shape)
         {
             this.Type = "Microsoft.HttpRequest";
             this.Url = url;
             this.Method = method;
             this.Body = body;
+            this.Property = property;
         }
     }
 

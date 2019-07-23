@@ -486,7 +486,7 @@ namespace NoteTaker
                 case "Microsoft.SetProperty":
                     return new SetProperty(this.property.Text + "=" + this.value.Text, curEditingStep.RelatedShape);
                 case "Microsoft.HttpRequest":
-                    return new HttpRequest(this.url.Text, this.method.Text, this.body.Text, curEditingStep.RelatedShape);
+                    return new HttpRequest(this.url.Text, this.method.Text, this.body.Text, this.property.Text, curEditingStep.RelatedShape);
                 case "Microsoft.TextInput":
                     return new TextInput(this.prompt.Text, this.property.Text, curEditingStep.RelatedShape);
                 
@@ -647,6 +647,11 @@ namespace NoteTaker
             }
 
 
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClearCanvas();
         }
     }
 }
