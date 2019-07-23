@@ -106,9 +106,9 @@ namespace NoteTaker
 
             displayInfo = DisplayInformation.GetForCurrentView();
             inkRecognizer.SetDisplayInformation(displayInfo);
-             
-            DpiX = displayInfo.RawDpiX;
-            DpiY = displayInfo.RawDpiY;
+
+            DpiX = 25.4f;
+            DpiY = 25.4f;
 
             debugCanvas.Visibility = ShapeButton.IsOn ? Visibility.Visible : Visibility.Collapsed;
             recogCanvas.Visibility = LineButton.IsOn ? Visibility.Visible : Visibility.Collapsed;

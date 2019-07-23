@@ -21,8 +21,8 @@ namespace Contoso.NoteTaker.Services.Ink
         HttpManager httpManager;
 
         // Default DPI setting to use when device displayInfo is not set
-        float dpiX = 96.0f;
-        float dpiY = 96.0f;
+        float dpiX = 25.4f;
+        float dpiY = 25.4f;
 
         public InkRecognizer(string appKey, string baseAddress, string destinationUrl)
         {
@@ -58,8 +58,8 @@ namespace Contoso.NoteTaker.Services.Ink
         {
             // DisplayInfo.RawDpiX and DisplayInfo.RawDpiY returns 0 when monitor doesnt provide physical dimensions 
             // or when user is in clone or multiple-monitor setup. Fallback to default DPI setting in such cases.
-            dpiX = (displayInfo.RawDpiX != 0) ? displayInfo.RawDpiX : dpiX;
-            dpiY = (displayInfo.RawDpiY != 0) ? displayInfo.RawDpiY : dpiY;
+            //dpiX = (displayInfo.RawDpiX != 0) ? displayInfo.RawDpiX : dpiX;
+            //dpiY = (displayInfo.RawDpiY != 0) ? displayInfo.RawDpiY : dpiY;
         }
 
         public InkRecognitionRoot GetRecognizerRoot()
