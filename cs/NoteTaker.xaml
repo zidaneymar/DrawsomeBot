@@ -24,7 +24,7 @@
                 <TextBox x:Name="condition" Header= "Contition" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForCondition(Type.SelectedValue),Mode=OneWay}" />
                 <TextBox x:Name="url" Header= "Url" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
                 <TextBox x:Name="method" Header= "Method" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
-                <TextBox x:Name="body" Header= "Body" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
+                <TextBox x:Name="body" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Header= "Body" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForHttp(Type.SelectedValue),Mode=OneWay}" />
                 <TextBox x:Name="prompt" Header= "Prompt" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForPrompt(Type.SelectedValue),Mode=OneWay}" />
                 <TextBox x:Name="value" Header= "Value" Margin="10,10,0,0" Width="300" HorizontalAlignment="Left" Visibility="{x:Bind local:NoteTaker.GetVisibilityForValue(Type.SelectedValue),Mode=OneWay}" />
 
