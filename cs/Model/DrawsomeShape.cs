@@ -52,7 +52,7 @@ namespace NoteTaker.Model
         public float OverlapSizeWithLinesBegin(DrawsomeLine line, int take = 10)
         {
             float res = 0;
-            foreach (var littleRect in line.LittleRects.Take(10))
+            foreach (var littleRect in line.LittleRects.Take(take))
             {
                 res += this.RecogUnit.BoundingRect.OverlapSize(littleRect);
             }

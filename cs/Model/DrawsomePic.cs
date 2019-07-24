@@ -60,19 +60,19 @@ namespace NoteTaker.Model
 
             foreach (var line in inkLines)
             {
-                this.AllLines.Add(new DrawsomeLine(line, inkStrokes, 5, HookUpDistance));
+                this.AllLines.Add(new DrawsomeLine(line, inkStrokes, 3, HookUpDistance));
             }
 
             // we iterate each shape to detect the next and previous line
             foreach (var dShape in this.AllShapes)
             {
-                var nextLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesBegin(item)).Where(item => dShape.OverlapSizeWithLinesBegin(item) != 0);
+                var nextLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesBegin(item, item.LittleRects.Count / 10)).Where(item => dShape.OverlapSizeWithLinesBegin(item, item.LittleRects.Count / 10) != 0);
                 foreach (var nextLine in nextLines)
                 {
                     dShape.Next.Add(nextLine);
                 }
 
-                var prevLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesEnd(item)).Where(item => dShape.OverlapSizeWithLinesEnd(item) != 0);
+                var prevLines = this.AllLines.OrderByDescending(item => dShape.OverlapSizeWithLinesEnd(item, item.LittleRects.Count / 10)).Where(item => dShape.OverlapSizeWithLinesEnd(item, item.LittleRects.Count / 10) != 0);
                 foreach (var prevLine in prevLines)
                 {
                     prevLine.Next.Add(dShape);
