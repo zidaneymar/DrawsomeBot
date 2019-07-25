@@ -41,8 +41,9 @@ namespace NoteTaker.Model
                 {
                     Text = root.GetLines().ToList().FindAll(item => shape.Contains(item)).FirstOrDefault()?.RecognizedText
                 };
-                if (shapeToAdd.Type != ShapeType.Undetermined)
+                if (shapeToAdd.Type != ShapeType.Drawing)
                 {
+                    // add all shapes except line
                     this.AllShapes.Add(shapeToAdd);
                 }
             }
