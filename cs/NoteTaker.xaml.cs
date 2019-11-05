@@ -89,7 +89,7 @@ namespace NoteTaker
             this.InitializeComponent();
 
             // Replace the subscriptionKey string value with your valid subscription key.
-            const string subscriptionKey = "ad3f6f1060e54ceaaf7dcae9d74c9fa4";
+            const string subscriptionKey = "";
 
             // URI information for ink recognition:
             const string endpoint = "https://api.cognitive.microsoft.com";

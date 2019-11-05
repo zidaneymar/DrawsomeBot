@@ -26,7 +26,7 @@ namespace NoteTaker.Helpers
         public static async Task<ComposerStep> BuildComposerStepFromShape(DrawsomeShape shape)
         {
             var query = shape.Text;
-            var luisResponse = await new LuisRecognizer("447f0c99416f450598e97ba887644f95", "e60298ef-464f-457b-9ea4-6f7791b350fd").GetPrediction(query);
+            var luisResponse = await new LuisRecognizer("", "").GetPrediction(query);
 
             var content = GetContent(luisResponse);
 
